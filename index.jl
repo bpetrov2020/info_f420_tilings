@@ -43,36 +43,74 @@ md"""
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
 
-# ╔═╡ e32b500b-68b1-4cea-aac5-f6755cfcc5b6
-TableOfContents()
+# ╔═╡ 092d59e2-d814-48e5-87ca-db6fdfbbe934
+md"## Constants"
 
-# ╔═╡ 730d696b-2775-42e0-a54e-71b9f582e8f4
-const UP = 'u'
-
-# ╔═╡ ad337012-1645-4132-a81b-7026b7efe8cd
+# ╔═╡ 3a0b058e-6921-4375-b514-7a05f19a26bb
 const RIGHT = 'r'
 
-# ╔═╡ 645e82b6-ce03-47f9-9ca7-d1287ce56198
-const DOWN = 'd'
+# ╔═╡ 473faf5a-8152-44b7-b3f3-265a87d89391
+const UP = 'u'
 
-# ╔═╡ 461859e0-92ca-4574-ba7a-909beeade76a
+# ╔═╡ 3ce45f35-0ef0-4e87-a20c-7f72c03251df
 const LEFT = 'l'
 
-# ╔═╡ fac3b4fe-7af5-11ee-2828-6d321a068c31
-"""
-Returns the complement of the given character.
-"""
-function complement(c::Char)
-	if c == UP
-		DOWN
-	elseif c == DOWN
-		UP
-	elseif c == LEFT
-		RIGHT
-	elseif c == RIGHT
-		LEFT
-	end
+# ╔═╡ 5754ff07-4a06-40eb-b15e-9e1a2f135395
+const DOWN = 'd'
+
+# ╔═╡ dab01fba-d85b-4956-94c4-b8d2a6933165
+const ALPHABET = [RIGHT, UP, LEFT, DOWN]
+
+# ╔═╡ 9fd065ab-df8e-4058-b84a-d8824cfd60cc
+md"## Helper functions"
+
+# ╔═╡ ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
+indexof(letter::Char) = findfirst(x -> x == letter, ALPHABET)
+
+# ╔═╡ 5592d3ff-30a3-4be7-9ce6-3894ef76c79d
+function tθ(letter::Char, θ::Int64)
+	@assert θ % 90 == 0
+
+	rot = (θ ÷ 90) % 3
+	idx = mod1(indexof(letter) + rot, length(ALPHABET))
+	
+	ALPHABET[idx]
 end
+
+# ╔═╡ 556054b0-23e5-4bef-8356-ffdbb99cdcd2
+complement(letter::Char) = tθ(letter, 180)
+
+# ╔═╡ fe33290c-b27c-48bd-8aee-b6f3cd6a5184
+complement(word::String) = complement.(word)
+
+# ╔═╡ 24c55137-7470-4b2a-9948-9e4ec23aa11c
+function fθ(letter::Char, θ::Int64)
+	@assert θ ∈ [-45, 0, 45, 90]
+	
+	curr = indexof(letter)
+	rotation = 0  # Do nothing by default
+	
+	if θ == -45
+		rotation = isodd(curr) ? -90 : 90
+	elseif θ == 0
+		rotation = isodd(curr) ? 0 : 180
+	elseif θ == 45
+		rotation = isodd(curr) ? 90 : -90
+	elseif θ == 90
+		rotation = isodd(curr) ? 180 : 0
+	end
+
+	tθ(letter, rotation)
+end
+
+# ╔═╡ 642e20fa-5582-418b-ae66-7ec493209736
+backtrack(word::String) = complement(reverse(word))
+
+# ╔═╡ 3f57a6c8-d02d-4c29-8b0d-4e8871f60900
+md"## Notebook related"
+
+# ╔═╡ e32b500b-68b1-4cea-aac5-f6755cfcc5b6
+TableOfContents()
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -354,12 +392,21 @@ version = "17.4.0+0"
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
 # ╟─852453e2-2802-4e2a-9614-accb986bc8e7
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
-# ╟─730d696b-2775-42e0-a54e-71b9f582e8f4
-# ╟─ad337012-1645-4132-a81b-7026b7efe8cd
-# ╟─645e82b6-ce03-47f9-9ca7-d1287ce56198
-# ╟─461859e0-92ca-4574-ba7a-909beeade76a
-# ╠═fac3b4fe-7af5-11ee-2828-6d321a068c31
-# ╟─49735ec6-6b0e-4e8e-995c-cc2e8c41e625
-# ╟─e32b500b-68b1-4cea-aac5-f6755cfcc5b6
+# ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
+# ╟─3a0b058e-6921-4375-b514-7a05f19a26bb
+# ╟─473faf5a-8152-44b7-b3f3-265a87d89391
+# ╟─3ce45f35-0ef0-4e87-a20c-7f72c03251df
+# ╟─5754ff07-4a06-40eb-b15e-9e1a2f135395
+# ╟─dab01fba-d85b-4956-94c4-b8d2a6933165
+# ╟─9fd065ab-df8e-4058-b84a-d8824cfd60cc
+# ╠═ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
+# ╠═5592d3ff-30a3-4be7-9ce6-3894ef76c79d
+# ╠═556054b0-23e5-4bef-8356-ffdbb99cdcd2
+# ╠═fe33290c-b27c-48bd-8aee-b6f3cd6a5184
+# ╠═24c55137-7470-4b2a-9948-9e4ec23aa11c
+# ╠═642e20fa-5582-418b-ae66-7ec493209736
+# ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
+# ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
+# ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
