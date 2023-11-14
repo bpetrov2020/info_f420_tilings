@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.26
+# v0.19.32
 
 using Markdown
 using InteractiveUtils
@@ -9,6 +9,9 @@ begin
 	using PlutoUI
 end
 
+# ╔═╡ c84c3cfb-46df-4d5a-93c3-4e34be505488
+using HypertextLiteral
+
 # ╔═╡ 16fdf9c8-975c-4608-af46-7ed6d20bad7a
 md"# Polyominos tilings"
 
@@ -17,6 +20,201 @@ md"## Introduction"
 
 # ╔═╡ 45d3575a-c887-435c-84be-a26284ee5dcb
 md"## Interactive showcase"
+
+# ╔═╡ 6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+@htl("""
+<style>
+	.button-grid {
+		display: grid;
+		grid-template-columns: repeat(10, 50px);
+		grid-gap: 0px;
+	}
+	
+	.button {
+		width: 50px;
+		height: 50px;
+		border: 1px solid black;
+		cursor: pointer;
+		outline: none;
+		font-weight: bold;
+		background-color: white;
+	}
+	
+	.button.clicked {
+		border: 3px solid red;
+	}
+	.button.top.clicked {
+		border-top: 1px dotted #8c8c8c;
+	}
+	.button.bottom.clicked {
+		border-bottom: 1px dotted #8c8c8c;
+	}
+	.button.right.clicked {
+		border-right: 1px dotted #8c8c8c;
+	}
+	.button.left.clicked {
+		border-left: 1px dotted #8c8c8c;
+	}
+</style>
+
+<div id="button-grid" class="button-grid"></div>
+<script>
+	// Generating the buttons
+	const buttonContainer = document.getElementById('button-grid');
+	for (let i = 1; i <= 100; i++) {
+		const button = document.createElement('button');
+		button.className = 'button';
+		buttonContainer.appendChild(button);
+	}
+	// Bind click with neighbors 
+	const buttons = document.querySelectorAll('.button');
+	buttons.forEach(btn => btn.onclick = function() {
+		buttonClick(btn, getNeighbors(btn));
+	});
+	
+	function buttonClick(button, neighbors) {
+		button.classList.toggle('clicked');
+		neighbors.forEach(nb => {
+			if (nb[0].classList.contains('clicked')) {
+				switch(nb[1]){
+					case 'T':
+						button.classList.toggle('top');
+						nb[0].classList.toggle('bottom');
+						break;
+					case 'B':
+						button.classList.toggle('bottom');
+						nb[0].classList.toggle('top');
+						break;
+					case 'R':
+						button.classList.toggle('right');
+						nb[0].classList.toggle('left');
+						break;
+					case 'L':
+						button.classList.toggle('left');
+						nb[0].classList.toggle('right');
+						break;
+					default:
+						console.log("Something went wrong");
+				}
+			}
+		});
+	}
+	
+	function getNeighbors(button) {
+		const neighbors = [];
+		const buttons = document.querySelectorAll('.button');
+		const buttonIndex = Array.from(buttons).indexOf(button);
+
+		// Get Left, Right, Top and Bottom Neighbour
+		const neighborIndices = [
+		[buttonIndex - 1, 'L'],
+		[buttonIndex + 1, 'R'],
+		[buttonIndex - 10, 'T'],
+		[buttonIndex + 10, 'B']];
+		const validIndices = neighborIndices.filter(idx => idx[0] >= 0 && idx[0]< buttons.length);
+		validIndices.forEach(idx => neighbors.push([buttons[idx[0]], idx[1]]));
+		return neighbors;
+	}
+	</script>
+""")
+
+# ╔═╡ 8b41e978-f9cf-4515-9141-cbf8130521d9
+@htl("""
+<style>
+	.button-line {
+		width: 505px;
+		display: flex;
+		justify-content: space-between;
+	}
+	
+	.cmd-button {
+		width: 80px;
+		height: 35px;
+		margin-right: 5px;
+		color: white;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+	
+	.cmd-button:nth-child(1) {
+		background-color: #00e600; /* Green */
+	}
+	
+	.cmd-button:nth-child(2) {
+		background-color: #668cff; /* Blue */
+	}
+	
+	.cmd-button:nth-child(3) {
+		background-color: #ff1a1a; /* Red */
+	}
+	
+	.cmd-button:hover {
+		opacity: 0.8;
+	}
+
+  	.cmd-button:disabled {
+    background-color: #bcbcde;
+    cursor: not-allowed; 
+  }
+</style>
+
+<div class="button-line">
+	<button class="cmd-button" id="done-btn">DONE</button>
+	<button class="cmd-button" id="edit-btn">EDIT</button>
+	<button class="cmd-button" id="reset-btn">RESET</button>
+</div>
+<script>
+	// (enabled) Done => Checks for legal polyomino => Bw = generateBoundaryWord() => fill polyomino in grid => disable button and grid => enable Edit
+	// (disabled) Edit => If done => Bw= None => enable grid and Done => unfill polyomino in grid
+	// (enabled) Reset => Bw = None => Clears grid => enable grid and Done
+
+	const doneBtn = document.getElementById('done-btn');
+	const editBtn = document.getElementById('edit-btn');
+	const resetBtn = document.getElementById('reset-btn');
+
+	editBtn.disabled = true;
+
+	function generateBoundaryWord() {
+		let bw = 'yop'
+		return bw;
+	}
+		
+	function handleDoneClick() {
+		// Checks for legal polyomino
+		let bw = generateBoundaryWord()
+		if ( bw!== null) {
+		  // Global Pluto BW = bw
+		  // Fill polyomino in grid
+		  doneBtn.disabled = true;
+		  editBtn.disabled = false;
+		}
+	}
+	
+	function handleEditClick() {
+		if (doneBtn.disabled) {
+		  // Global Pluto Bw = None
+		  // Enable grid
+		  // Unfill polyomino in grid
+		  doneBtn.disabled = false;
+		  editBtn.disabled = true;
+		}
+	}
+	
+	function handleResetClick() {
+		// Global Pluto Bw = None
+		// Clears grid
+		// Enable grid 
+		doneBtn.disabled = false;
+		editBtn.disabled = true;
+	}
+
+	doneBtn.onclick = function() {handleDoneClick();};
+	editBtn.onclick = function() {handleEditClick();};
+	resetBtn.onclick = function() {handleResetClick();};
+
+</script>
+""")
 
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
@@ -115,9 +313,11 @@ TableOfContents()
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+HypertextLiteral = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
+HypertextLiteral = "~0.9.5"
 PlutoUI = "~0.7.52"
 """
 
@@ -127,7 +327,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "f5c06f335ceddc089c816627725c7f55bb23b077"
+project_hash = "98f4f9b67ee4d67da87eae57a18fa4e682f2e721"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -182,9 +382,9 @@ version = "0.0.4"
 
 [[deps.HypertextLiteral]]
 deps = ["Tricks"]
-git-tree-sha1 = "c47c5fa4c5308f27ccaac35504858d8914e102f9"
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.4"
+version = "0.9.5"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
@@ -387,6 +587,8 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
+# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
@@ -407,6 +609,7 @@ version = "17.4.0+0"
 # ╠═642e20fa-5582-418b-ae66-7ec493209736
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
+# ╠═c84c3cfb-46df-4d5a-93c3-4e34be505488
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
