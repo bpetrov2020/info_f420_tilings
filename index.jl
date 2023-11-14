@@ -37,7 +37,6 @@ md"## Interactive showcase"
 	.button-grid {
 		display: grid;
 		grid-template-columns: repeat(10, 50px);
-		grid-gap: 0px;
 	}
 	
 	.button {
@@ -65,6 +64,14 @@ md"## Interactive showcase"
 	.button.left.clicked {
 		border-left: 1px dotted #8c8c8c;
 	}
+
+	.button.fill-red {
+		background-color: red;
+	}
+
+	.button.fill-white {
+		background-color: white;
+	}
 </style>
 
 <div id="button-grid" class="button-grid"></div>
@@ -76,6 +83,7 @@ md"## Interactive showcase"
 		button.className = 'button';
 		buttonContainer.appendChild(button);
 	}
+
 	// Bind click with neighbors 
 	const buttons = document.querySelectorAll('.button');
 	buttons.forEach(btn => btn.onclick = function() {
@@ -143,21 +151,21 @@ md"## Interactive showcase"
 		height: 35px;
 		margin-right: 5px;
 		color: white;
-		border: none;
 		border-radius: 5px;
+
 		cursor: pointer;
 	}
 	
 	.cmd-button:nth-child(1) {
-		background-color: #00e600; /* Green */
+		background-color: #00e600; 
 	}
 	
 	.cmd-button:nth-child(2) {
-		background-color: #668cff; /* Blue */
+		background-color: #668cff; 
 	}
 	
 	.cmd-button:nth-child(3) {
-		background-color: #ff1a1a; /* Red */
+		background-color: #ff1a1a;
 	}
 	
 	.cmd-button:hover {
@@ -166,8 +174,8 @@ md"## Interactive showcase"
 
   	.cmd-button:disabled {
     	background-color: #bcbcde;
-    cursor: not-allowed; 
-  }
+    	cursor: not-allowed; 
+	}
 </style>
 
 <div class="button-line">
@@ -185,19 +193,65 @@ md"## Interactive showcase"
 	const resetBtn = document.getElementById('reset-btn');
 	
 	editBtn.disabled = true;
-	
+
 	function generateBoundaryWord() {
 		let bw = 'yop'
 		return bw;
 	}
+
+	function disableGrid(flag) {
+			const buttons = document.querySelectorAll('.button');
+			buttons.forEach(btn => btn.disabled = flag);
+	}
+
+	function fillPolyomino(flag) {
+			const buttons = document.querySelectorAll('.button');
+			if (flag){
+				buttons.forEach(btn => {
+					if (btn.classList.contains('clicked')) {
+						btn.classList.toggle('fill-red');
+					}
+			});
+			}else{
+				buttons.forEach(btn => {
+					if (btn.classList.contains('clicked')) {
+						btn.classList.toggle('fill-white');
+					}
+				});
+			}
+	}
+
+	function clearGrid() {
+		const buttons = document.querySelectorAll('.button');
+		buttons.forEach(btn => {
+			if (btn.classList.contains('top.clicked')) {
+				btn.classList.toggle('top.clicked');
+			}
+			if (btn.classList.contains('bottom.clicked')) {
+				btn.classList.toggle('bottom.clicked');
+			}
+			if (btn.classList.contains('left.clicked')) {
+				btn.classList.toggle('left.clicked');
+			}
+			if (btn.classList.contains('right.clicked')) {
+				btn.classList.toggle('right.clicked');
+			}
+			if (btn.classList.contains('clicked')) {
+				btn.classList.toggle('clicked');
+			}
+		
+		});
+	}
+
 	function handleDoneClick() {
 		// Checks for legal polyomino
 		let bw = generateBoundaryWord()
-		if ( bw!== null) {
+		if ( bw !== null) {
 			// Sending the BoundaryWord back to pluto
-			span.value = bw
-			span.dispatchEvent(new CustomEvent("input"))
-			// Fill polyomino in grid
+			span.value = bw;
+			span.dispatchEvent(new CustomEvent("input"));
+			fillPolyomino(true);
+			disableGrid(true);
 			doneBtn.disabled = true;
 			editBtn.disabled = false;
 		}
@@ -205,18 +259,22 @@ md"## Interactive showcase"
 	
 	function handleEditClick() {
 		if (doneBtn.disabled) {
-			// Global Pluto Bw = None
+			span.value = null;
+			span.dispatchEvent(new CustomEvent("input"));
 			// Enable grid
-			// Unfill polyomino in grid
+			fillPolyomino(false);
+			disableGrid(false);
 			doneBtn.disabled = false;
 			editBtn.disabled = true;
 		}
 	}
 	
 	function handleResetClick() {
-		// Global Pluto Bw = None
-		// Clears grid
-		// Enable grid 
+		span.value = null;
+		span.dispatchEvent(new CustomEvent("input"));
+		clearGrid()
+		fillPolyomino(false);
+		disableGrid(false);
 		doneBtn.disabled = false;
 		editBtn.disabled = true;
 	}
@@ -224,7 +282,6 @@ md"## Interactive showcase"
 	doneBtn.onclick = function() {handleDoneClick();};
 	editBtn.onclick = function() {handleEditClick();};
 	resetBtn.onclick = function() {handleResetClick();};
-
 </script>
 </span>
 """)
@@ -603,8 +660,8 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
-# ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
-# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╠═d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
