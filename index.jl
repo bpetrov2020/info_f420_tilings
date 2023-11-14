@@ -52,16 +52,16 @@ md"## Interactive showcase"
 	.button.clicked {
 		border: 3px solid red;
 	}
-	.button.top.clicked {
+	.button.top {
 		border-top: 1px dotted #8c8c8c;
 	}
-	.button.bottom.clicked {
+	.button.bottom {
 		border-bottom: 1px dotted #8c8c8c;
 	}
-	.button.right.clicked {
+	.button.right {
 		border-right: 1px dotted #8c8c8c;
 	}
-	.button.left.clicked {
+	.button.left {
 		border-left: 1px dotted #8c8c8c;
 	}
 
@@ -214,8 +214,8 @@ md"## Interactive showcase"
 			});
 			}else{
 				buttons.forEach(btn => {
-					if (btn.classList.contains('clicked')) {
-						btn.classList.toggle('fill-white');
+					if (btn.classList.contains('fill-red')) {
+						btn.classList.remove('fill-red');
 					}
 				});
 			}
@@ -224,22 +224,11 @@ md"## Interactive showcase"
 	function clearGrid() {
 		const buttons = document.querySelectorAll('.button');
 		buttons.forEach(btn => {
-			if (btn.classList.contains('top.clicked')) {
-				btn.classList.toggle('top.clicked');
-			}
-			if (btn.classList.contains('bottom.clicked')) {
-				btn.classList.toggle('bottom.clicked');
-			}
-			if (btn.classList.contains('left.clicked')) {
-				btn.classList.toggle('left.clicked');
-			}
-			if (btn.classList.contains('right.clicked')) {
-				btn.classList.toggle('right.clicked');
-			}
-			if (btn.classList.contains('clicked')) {
-				btn.classList.toggle('clicked');
-			}
-		
+			btn.classList.remove('top');
+			btn.classList.remove('bottom');
+			btn.classList.remove('left');
+			btn.classList.remove('right');
+			btn.classList.remove('clicked');
 		});
 	}
 
@@ -660,8 +649,8 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
-# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
-# ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╠═d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
