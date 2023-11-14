@@ -4,6 +4,16 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ 49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 begin
 	using PlutoUI
@@ -119,7 +129,8 @@ md"## Interactive showcase"
 """)
 
 # ╔═╡ 8b41e978-f9cf-4515-9141-cbf8130521d9
-@htl("""
+@bind boundaryWord @htl("""
+<span>
 <style>
 	.button-line {
 		width: 505px;
@@ -154,7 +165,7 @@ md"## Interactive showcase"
 	}
 
   	.cmd-button:disabled {
-    background-color: #bcbcde;
+    	background-color: #bcbcde;
     cursor: not-allowed; 
   }
 </style>
@@ -168,36 +179,37 @@ md"## Interactive showcase"
 	// (enabled) Done => Checks for legal polyomino => Bw = generateBoundaryWord() => fill polyomino in grid => disable button and grid => enable Edit
 	// (disabled) Edit => If done => Bw= None => enable grid and Done => unfill polyomino in grid
 	// (enabled) Reset => Bw = None => Clears grid => enable grid and Done
-
+	const span = currentScript.parentElement
 	const doneBtn = document.getElementById('done-btn');
 	const editBtn = document.getElementById('edit-btn');
 	const resetBtn = document.getElementById('reset-btn');
-
+	
 	editBtn.disabled = true;
-
+	
 	function generateBoundaryWord() {
 		let bw = 'yop'
 		return bw;
 	}
-		
 	function handleDoneClick() {
 		// Checks for legal polyomino
 		let bw = generateBoundaryWord()
 		if ( bw!== null) {
-		  // Global Pluto BW = bw
-		  // Fill polyomino in grid
-		  doneBtn.disabled = true;
-		  editBtn.disabled = false;
+			// Sending the BoundaryWord back to pluto
+			span.value = bw
+			span.dispatchEvent(new CustomEvent("input"))
+			// Fill polyomino in grid
+			doneBtn.disabled = true;
+			editBtn.disabled = false;
 		}
 	}
 	
 	function handleEditClick() {
 		if (doneBtn.disabled) {
-		  // Global Pluto Bw = None
-		  // Enable grid
-		  // Unfill polyomino in grid
-		  doneBtn.disabled = false;
-		  editBtn.disabled = true;
+			// Global Pluto Bw = None
+			// Enable grid
+			// Unfill polyomino in grid
+			doneBtn.disabled = false;
+			editBtn.disabled = true;
 		}
 	}
 	
@@ -214,7 +226,11 @@ md"## Interactive showcase"
 	resetBtn.onclick = function() {handleResetClick();};
 
 </script>
+</span>
 """)
+
+# ╔═╡ d1ae79ec-4058-4858-915e-54a7a9094d85
+boundaryWord
 
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
@@ -587,8 +603,9 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
-# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╠═d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
