@@ -83,7 +83,6 @@ md"## Interactive showcase"
 		button.className = 'button';
 		buttonContainer.appendChild(button);
 	}
-
 	// Bind click with neighbors 
 	const buttons = document.querySelectorAll('.button');
 	buttons.forEach(btn => btn.onclick = function() {
@@ -188,7 +187,8 @@ md"## Interactive showcase"
 	const doneBtn = document.getElementById('done-btn');
 	const editBtn = document.getElementById('edit-btn');
 	const resetBtn = document.getElementById('reset-btn');
-	
+	var btns = document.querySelectorAll('.button');
+
 	editBtn.disabled = true;
 
 	function rotateLists(l1, l2, l3, rot) {
@@ -199,65 +199,67 @@ md"## Interactive showcase"
 	    }
 	}
 
-	function sizeOfPolyominoOutlineCells() {
-		let count = 0;
-		const btns = document.querySelectorAll('.button');
-		btns.forEach(btn => {
-			if(btn.classList.contains('clicked') && !(
-			btn.classList.contains('top') &&
-			btn.classList.contains('bottom') &&
-			btn.classList.contains('left') &&
-			btn.classList.contains('right')
-			)){
-				count ++;
-			}
+	function getSizeOfBoundary() {
+		let total = 0;
+		let clickedBtns = document.querySelectorAll('.button.clicked');
+		clickedBtns.forEach(btn => {
+			let boundary = 4;
+			if (btn.classList.contains('top')) { boundary--; }
+			if (btn.classList.contains('bottom')) { boundary--; }
+			if (btn.classList.contains('left')) { boundary--; }
+			if (btn.classList.contains('right')) { boundary--; }
+			total = total + boundary;
 		});
-		return count;
+		console.log("total size: " + total);
+		return total;
 	}
 
 	function findStartBtn() {
 		// Find the startBtn (top and/or leftmost clicked button)
-		const btns = document.querySelectorAll('.button');
 	    let startBtnIdx = null;
+		let rotate = false;
 	    for (let i = 0; i < btns.length; i++) {
 	        if (btns[i].classList.contains('clicked')) {
 	            if (startBtnIdx === null ) {startBtnIdx = i;}
 				else if (~~(i / 10) === ~~(startBtnIdx / 10)) {
 					if((startBtnIdx + 10 < btns.length) && (!btns[startBtnIdx + 10].classList.contains('clicked'))) {
-						rotateLists(border, letters, shifts, 1);
+						console.log("start from botttom of lefttop:" + startBtnIdx);
+						rotate = true;
 						break;
 					}
-				} else  {
+				} else {
+					console.log("start from left of lefttop:" + startBtnIdx);
 					break;
 				}
 	        }
 	    }
-		return startBtnIdx;
+		return [startBtnIdx, rotate];
 	}
 
-	function generateBoundaryWord(size) {
-	    const btns = document.querySelectorAll('.button');
+	function generateBoundaryWord(sizeOfBoundary) {
+		let border = ['left', 'top', 'right', 'bottom'];
+		let letters = ['u', 'r', 'd', 'l'];
+		let shifts = [-1, -10, 1, 10];
+		let btns = document.querySelectorAll('.button');
 	    const bw = [];
-	    let border = ['left', 'top', 'right', 'bottom'];
-	    let letters = ['u', 'r', 'd', 'l'];
-	    let shifts = [-1, -10, 1, 10];
-		let visited = [];
-		
-	    let crntBtnIdx = findStartBtn();	
-		visited.push(crntBtnIdx);
+		let visitedBoundaries = 0;
+		let startRotate = findStartBtn();
+	    let crntBtnIdx = startRotate[0];
+		if (startRotate[1]){rotateLists(border, letters, shifts, 1);}
 		do {
 			for (let i = 0; i < 4; i++) {
 	            if (!btns[crntBtnIdx].classList.contains(border[i])) {
-					if (!visited.includes(crntBtnIdx)) {visited.push(crntBtnIdx)}
 					// if there is a border on the border[i] side
 	                bw.push(letters[i]);
+					visitedBoundaries++;
+					if (visitedBoundaries >= sizeOfBoundary){break;}
 	            } else {
 	                crntBtnIdx += shifts[i];
 	                rotateLists(border, letters, shifts, (5 - i) % 4);
 	                break;
 	            }
 	        }
-		} while (visited.length < size);
+		} while (visitedBoundaries < sizeOfBoundary);
 
 	    const boundaryWordString = bw.join('');
 	    console.log("Boundary Word: " + boundaryWordString);
@@ -265,20 +267,19 @@ md"## Interactive showcase"
 	}
 
 	function disableGrid(flag) {
-			const buttons = document.querySelectorAll('.button');
-			buttons.forEach(btn => btn.disabled = flag);
+			btns.forEach(btn => btn.disabled = flag);
 	}
 
 	function fillPolyomino(flag) {
-			const buttons = document.querySelectorAll('.button');
+			const btns = document.querySelectorAll('.button');
 			if (flag){
-				buttons.forEach(btn => {
+				btns.forEach(btn => {
 					if (btn.classList.contains('clicked')) {
 						btn.classList.toggle('fill-red');
 					}
 			});
 			}else{
-				buttons.forEach(btn => {
+				btns.forEach(btn => {
 					if (btn.classList.contains('fill-red')) {
 						btn.classList.remove('fill-red');
 					}
@@ -287,8 +288,7 @@ md"## Interactive showcase"
 	}
 
 	function clearGrid() {
-		const buttons = document.querySelectorAll('.button');
-		buttons.forEach(btn => {
+		btns.forEach(btn => {
 			btn.classList.remove('top');
 			btn.classList.remove('bottom');
 			btn.classList.remove('left');
@@ -297,11 +297,33 @@ md"## Interactive showcase"
 		});
 	}
 
+	function checkNeighborhood(btn, nClicked) {
+		return false;
+	}
+
+	function checkPolyomino() {
+		let empty = true;
+		let legalNeighborhood = true;
+		
+		for (let i = 0; i < btns.length; i++) {
+		    let btn = btns[i];
+			let btnClicked = btn.classList.contains('clicked');
+			if (btnClicked) {empty = false;}
+			legalNeighborhood = checkNeighborhood(btn, !btnClicked);
+			if (!legalNeighborhood) {break;}
+		}
+		return !empty && legalNeighborhood;
+	}
+
 	function handleDoneClick() {
-		// Checks for legal polyomino
-		let nbrBtns = sizeOfPolyominoOutlineCells();
-		console.log("size: " + nbrBtns);
-		let bw = generateBoundaryWord(nbrBtns)
+		/*if (!checkPolyomino()) {
+			console.log("Illegal polyomino");
+			return;
+		}
+		let bw = null;
+		console.log("legal polyomino");*/
+		let sizeOfBoundary = getSizeOfBoundary();
+		let bw = generateBoundaryWord(sizeOfBoundary);
 		if ( bw !== null) {
 			// Sending the BoundaryWord back to pluto
 			span.value = bw;
@@ -716,7 +738,7 @@ version = "17.4.0+0"
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
-# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
