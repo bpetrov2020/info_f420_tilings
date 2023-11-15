@@ -194,9 +194,58 @@ md"## Interactive showcase"
 	
 	editBtn.disabled = true;
 
+	function rotateLists(l1, l2, l3, rot) {
+	    for (let i = 0; i < rot; i++) {
+	        l1.unshift(l1.pop());
+	        l2.unshift(l2.pop());
+	        l3.unshift(l3.pop());
+	    }
+	}
+	
 	function generateBoundaryWord() {
-		let bw = 'yop'
-		return bw;
+	    const btns = document.querySelectorAll('.button');
+	    const bw = [];
+	    let border = ['left', 'top', 'right', 'bottom'];
+	    let letters = ['u', 'r', 'd', 'l'];
+	    let shifts = [-1, -10, 1, 10];
+	
+	    // Find the startBtn (top and/or leftmost clicked button)
+	    let startBtnIdx = null;
+	    for (let i = 0; i < btns.length; i++) {
+	        if (btns[i].classList.contains('clicked')) {
+	            if (startBtnIdx === null ) {startBtnIdx = i;}
+				else if (~~(i / 10) === ~~(startBtnIdx / 10)) {
+					// We have the top-leftmost
+					rotateLists(border, letters, shifts, 1);
+					break;
+				} else  {
+					break;
+				}
+	        }
+	    }
+	
+	    let crntBtnIdx = startBtnIdx;
+		console.log("current idx : " + crntBtnIdx);
+	    do {
+	        for (let i = 0; i < 4; i++) {
+	            if (!btns[crntBtnIdx].classList.contains(border[i])) {
+					// if there is a border on the border[i] side
+					console.log("Border on " + border[i]);
+	                bw.push(letters[i]);
+	            } else {
+					console.log("No Border on " + border[i]);
+	                crntBtnIdx += shifts[i];
+					console.log("current idx : " + crntBtnIdx);
+	                rotateLists(border, letters, shifts, (5 - i) % 4);
+					console.log("------------------");
+	                break;
+	            }
+	        }
+	    } while (crntBtnIdx !== startBtnIdx);
+	
+	    const boundaryWordString = bw.join('');
+	    console.log("Boundary Word: " + boundaryWordString);
+	    return boundaryWordString;
 	}
 
 	function disableGrid(flag) {
@@ -650,7 +699,7 @@ version = "17.4.0+0"
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
-# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╠═d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
