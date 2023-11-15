@@ -184,10 +184,7 @@ md"## Interactive showcase"
 	<button class="cmd-button" id="reset-btn">RESET</button>
 </div>
 <script>
-	// (enabled) Done => Checks for legal polyomino => Bw = generateBoundaryWord() => fill polyomino in grid => disable button and grid => enable Edit
-	// (disabled) Edit => If done => Bw= None => enable grid and Done => unfill polyomino in grid
-	// (enabled) Reset => Bw = None => Clears grid => enable grid and Done
-	const span = currentScript.parentElement
+	const span = currentScript.parentElement;
 	const doneBtn = document.getElementById('done-btn');
 	const editBtn = document.getElementById('edit-btn');
 	const resetBtn = document.getElementById('reset-btn');
@@ -201,48 +198,67 @@ md"## Interactive showcase"
 	        l3.unshift(l3.pop());
 	    }
 	}
-	
-	function generateBoundaryWord() {
-	    const btns = document.querySelectorAll('.button');
-	    const bw = [];
-	    let border = ['left', 'top', 'right', 'bottom'];
-	    let letters = ['u', 'r', 'd', 'l'];
-	    let shifts = [-1, -10, 1, 10];
-	
-	    // Find the startBtn (top and/or leftmost clicked button)
+
+	function sizeOfPolyominoOutlineCells() {
+		let count = 0;
+		const btns = document.querySelectorAll('.button');
+		btns.forEach(btn => {
+			if(btn.classList.contains('clicked') && !(
+			btn.classList.contains('top') &&
+			btn.classList.contains('bottom') &&
+			btn.classList.contains('left') &&
+			btn.classList.contains('right')
+			)){
+				count ++;
+			}
+		});
+		return count;
+	}
+
+	function findStartBtn() {
+		// Find the startBtn (top and/or leftmost clicked button)
+		const btns = document.querySelectorAll('.button');
 	    let startBtnIdx = null;
 	    for (let i = 0; i < btns.length; i++) {
 	        if (btns[i].classList.contains('clicked')) {
 	            if (startBtnIdx === null ) {startBtnIdx = i;}
 				else if (~~(i / 10) === ~~(startBtnIdx / 10)) {
-					// We have the top-leftmost
-					rotateLists(border, letters, shifts, 1);
-					break;
+					if((startBtnIdx + 10 < btns.length) && (!btns[startBtnIdx + 10].classList.contains('clicked'))) {
+						rotateLists(border, letters, shifts, 1);
+						break;
+					}
 				} else  {
 					break;
 				}
 	        }
 	    }
-	
-	    let crntBtnIdx = startBtnIdx;
-		console.log("current idx : " + crntBtnIdx);
-	    do {
-	        for (let i = 0; i < 4; i++) {
+		return startBtnIdx;
+	}
+
+	function generateBoundaryWord(size) {
+	    const btns = document.querySelectorAll('.button');
+	    const bw = [];
+	    let border = ['left', 'top', 'right', 'bottom'];
+	    let letters = ['u', 'r', 'd', 'l'];
+	    let shifts = [-1, -10, 1, 10];
+		let visited = [];
+		
+	    let crntBtnIdx = findStartBtn();	
+		visited.push(crntBtnIdx);
+		do {
+			for (let i = 0; i < 4; i++) {
 	            if (!btns[crntBtnIdx].classList.contains(border[i])) {
+					if (!visited.includes(crntBtnIdx)) {visited.push(crntBtnIdx)}
 					// if there is a border on the border[i] side
-					console.log("Border on " + border[i]);
 	                bw.push(letters[i]);
 	            } else {
-					console.log("No Border on " + border[i]);
 	                crntBtnIdx += shifts[i];
-					console.log("current idx : " + crntBtnIdx);
 	                rotateLists(border, letters, shifts, (5 - i) % 4);
-					console.log("------------------");
 	                break;
 	            }
 	        }
-	    } while (crntBtnIdx !== startBtnIdx);
-	
+		} while (visited.length < size);
+
 	    const boundaryWordString = bw.join('');
 	    console.log("Boundary Word: " + boundaryWordString);
 	    return boundaryWordString;
@@ -283,7 +299,9 @@ md"## Interactive showcase"
 
 	function handleDoneClick() {
 		// Checks for legal polyomino
-		let bw = generateBoundaryWord()
+		let nbrBtns = sizeOfPolyominoOutlineCells();
+		console.log("size: " + nbrBtns);
+		let bw = generateBoundaryWord(nbrBtns)
 		if ( bw !== null) {
 			// Sending the BoundaryWord back to pluto
 			span.value = bw;
@@ -299,7 +317,6 @@ md"## Interactive showcase"
 		if (doneBtn.disabled) {
 			span.value = null;
 			span.dispatchEvent(new CustomEvent("input"));
-			// Enable grid
 			fillPolyomino(false);
 			disableGrid(false);
 			doneBtn.disabled = false;
@@ -699,8 +716,8 @@ version = "17.4.0+0"
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
-# ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
-# ╠═d1ae79ec-4058-4858-915e-54a7a9094d85
+# ╠═8b41e978-f9cf-4515-9141-cbf8130521d9
+# ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
