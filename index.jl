@@ -487,25 +487,6 @@ Boundary word of Polyomino $P$, $𝐁(P)$= "$boundaryWord"
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
 
-# ╔═╡ 151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
-md"""
-Example of inline math ``x = 8`` and standalone:
-
-```math
-\sum_{i = 0}^{n} i = \frac{n(n+1)}{2}
-```
-"""
-
-# ╔═╡ 5751c86d-ca45-4788-b0e2-5fee73595720
-md"""
-Plain markdown with *italics*, **bold** and other niceties.
-"""
-
-# ╔═╡ 852453e2-2802-4e2a-9614-accb986bc8e7
-md"""
-> Some note
-"""
-
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
 
@@ -938,6 +919,19 @@ md"""
 
 """
 
+# ╔═╡ 46f79b8e-6c46-4499-9331-360c83096da5
+md"""
+# References
+"""
+
+# ╔═╡ 9e09d9bc-78d9-431c-952f-f42e98dbeb90
+md"""
+- [1] S. Langerman and A. Winslow, “A Quasilinear-Time Algorithm for Tiling the Plane Isohedrally with a Polyomino.” arXiv, Mar. 09, 2016. doi: 10.48550/arXiv.1507.02762.
+- [2] A. Winslow, “An Optimal Algorithm for Tiling the Plane with a Translated Polyomino.” arXiv, Sep. 22, 2015. doi: 10.48550/arXiv.1504.07883.
+- [3] S. Brlek, X. Provençal, and J.-M. Fédou, “On the tiling by translation problem,” Discrete Applied Mathematics, vol. 157, no. 3, pp. 464–475, Feb. 2009, doi: 10.1016/j.dam.2008.05.026.
+
+"""
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -1231,9 +1225,6 @@ version = "17.4.0+0"
 # ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
 # ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
-# ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
-# ╟─5751c86d-ca45-4788-b0e2-5fee73595720
-# ╟─852453e2-2802-4e2a-9614-accb986bc8e7
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
@@ -1282,5 +1273,7 @@ version = "17.4.0+0"
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
 # ╟─985b959d-038e-4d05-85e7-2f2ca0ab2001
+# ╟─46f79b8e-6c46-4499-9331-360c83096da5
+# ╟─9e09d9bc-78d9-431c-952f-f42e98dbeb90
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
