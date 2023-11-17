@@ -128,7 +128,14 @@ md"## Interactive showcase"
 		[buttonIndex + 1, 'R'],
 		[buttonIndex - 10, 'T'],
 		[buttonIndex + 10, 'B']];
-		const validIndices = neighborIndices.filter(idx => idx[0] >= 0 && idx[0]< buttons.length);
+		const validIndices = neighborIndices.filter(idx => 
+		idx[0] >= 0 && 
+		idx[0]< buttons.length &&
+		(idx[0] == buttonIndex - 10 ||
+		idx[0] == buttonIndex + 10 ||
+		(idx[0] == buttonIndex - 1 && ~~(idx[0] / 10) == ~~(buttonIndex/ 10)) ||
+		(idx[0] == buttonIndex + 1 && ~~(idx[0] / 10) == ~~(buttonIndex/ 10))
+		));
 		validIndices.forEach(idx => neighbors.push([buttons[idx[0]], idx[1]]));
 		return neighbors;
 	}
@@ -308,7 +315,15 @@ md"## Interactive showcase"
 								,buttonIndex - 10
 								,buttonIndex + 10];
 
-		const validIndices = neighborIndices.filter(idx => idx >= 0 && idx< btns.length);
+		const validIndices = neighborIndices.filter(idx => 
+		idx >= 0 && 
+		idx < btns.length &&
+		(idx == buttonIndex - 10 ||
+		idx == buttonIndex + 10 ||
+		(idx == buttonIndex - 1 && ~~(idx / 10) == ~~(buttonIndex/ 10)) ||
+		(idx == buttonIndex + 1 && ~~(idx / 10) == ~~(buttonIndex/ 10))
+		));
+
 		validIndices.forEach(idx => neighbors.push(idx));
 		return neighbors;
 	}
@@ -396,6 +411,8 @@ md"## Interactive showcase"
 	function handleDoneClick() {
 		if (!checkPolyomino()) {
 			console.log("Illegal polyomino");
+			span.value = "Illegal polyomino";
+			span.dispatchEvent(new CustomEvent("input"));
 			return;
 		}
 		let sizeOfBoundary = getSizeOfBoundary();
@@ -816,7 +833,7 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
-# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
