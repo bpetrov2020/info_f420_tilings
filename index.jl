@@ -487,25 +487,6 @@ Boundary word of Polyomino $P$, $𝐁(P)$= "$boundaryWord"
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
 
-# ╔═╡ 151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
-md"""
-Example of inline math ``x = 8`` and standalone:
-
-```math
-\sum_{i = 0}^{n} i = \frac{n(n+1)}{2}
-```
-"""
-
-# ╔═╡ 5751c86d-ca45-4788-b0e2-5fee73595720
-md"""
-Plain markdown with *italics*, **bold** and other niceties.
-"""
-
-# ╔═╡ 852453e2-2802-4e2a-9614-accb986bc8e7
-md"""
-> Some note
-"""
-
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
 
@@ -1244,9 +1225,6 @@ version = "17.4.0+0"
 # ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
 # ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
-# ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
-# ╟─5751c86d-ca45-4788-b0e2-5fee73595720
-# ╟─852453e2-2802-4e2a-9614-accb986bc8e7
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
