@@ -297,31 +297,107 @@ md"## Interactive showcase"
 		});
 	}
 
-	function checkNeighborhood(btn, nClicked) {
-		return false;
+
+
+	function getNeighbors(buttonIndex) {
+		const neighbors = [];
+
+		// Get Left, Right, Top and Bottom Neighbour
+		const neighborIndices = [buttonIndex - 1
+								,buttonIndex + 1
+								,buttonIndex - 10
+								,buttonIndex + 10];
+
+		const validIndices = neighborIndices.filter(idx => idx >= 0 && idx< btns.length);
+		validIndices.forEach(idx => neighbors.push(idx));
+		return neighbors;
+	}
+
+	function isOnGridBorder(idx) {
+		let line = ~~(idx / 10)
+		let collumn = idx % 10
+		if(line === 0 || line === 9 || collumn === 0 || collumn=== 9) {return true;}
+		else {return false;}
+	}
+
+	function dfs(i, visited, flag) {
+		let neigh = getNeighbors(i);
+		for (let j = 0; j < neigh.length; j++) {
+			if (flag){
+				if(!btns[neigh[j]].classList.contains('clicked') && visited[neigh[j]] === 0) {
+					visited[neigh[j]] = 1;
+					dfs(neigh[j], visited, true);
+				}
+			} else {
+				if(btns[neigh[j]].classList.contains('clicked') && visited[neigh[j]] === 0) {
+					visited[neigh[j]] = 1;
+					dfs(neigh[j], visited, false);
+				}
+			}
+		}
+	}
+
+	function checkNoHoles() {
+		//Any non-clicked button should have a non-clicked relative on grids border
+		let visited = Array(100).fill(0);
+		for (let i = 0; i < 100; i++) {
+			if (visited[i] === 0 && isOnGridBorder(i) && !btns[i].classList.contains('clicked')){
+				visited[i] = 1;
+				dfs(i, visited, true);
+			}
+		}
+
+		for (let i = 0; i < 100; i++) {
+			if (!btns[i].classList.contains('clicked') && visited[i] === 0) {
+				console.log("Hole found : " + i);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function checkNoIslands() {
+		let visited = Array(100).fill(0);
+		for (let i = 0; i < 100; i++) {
+			if (visited[i] === 0 && btns[i].classList.contains('clicked')){
+				visited[i] = 1;
+				dfs(i, visited, false);
+				break;
+			}
+		}
+		for (let i = 0; i < 100; i++) {
+			if (btns[i].classList.contains('clicked') && visited[i] === 0) {
+				console.log("Island found : " + i);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function checkNotEmpty() {
+		let notEmpty = false;
+		for (let i = 0; i < 100; i++) {
+			if (btns[i].classList.contains('clicked')) {
+				notEmpty = true;
+				break;
+			}
+		}
+		if (!notEmpty) {console.log("Empty grid !");}
+		return notEmpty;
 	}
 
 	function checkPolyomino() {
-		let empty = true;
-		let legalNeighborhood = true;
-		
-		for (let i = 0; i < btns.length; i++) {
-		    let btn = btns[i];
-			let btnClicked = btn.classList.contains('clicked');
-			if (btnClicked) {empty = false;}
-			legalNeighborhood = checkNeighborhood(btn, !btnClicked);
-			if (!legalNeighborhood) {break;}
-		}
-		return !empty && legalNeighborhood;
+		let cnh = checkNoHoles();
+		let cni = checkNoIslands();
+		let notEmpty = checkNotEmpty();
+		return (cnh && cni && notEmpty);
 	}
 
 	function handleDoneClick() {
-		/*if (!checkPolyomino()) {
+		if (!checkPolyomino()) {
 			console.log("Illegal polyomino");
 			return;
 		}
-		let bw = null;
-		console.log("legal polyomino");*/
 		let sizeOfBoundary = getSizeOfBoundary();
 		let bw = generateBoundaryWord(sizeOfBoundary);
 		if ( bw !== null) {
@@ -364,7 +440,10 @@ md"## Interactive showcase"
 """)
 
 # ╔═╡ d1ae79ec-4058-4858-915e-54a7a9094d85
-boundaryWord
+md"""
+Boundary word of Polyomino $P$, $𝓑(P)$= "$boundaryWord"
+
+"""
 
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
@@ -737,7 +816,7 @@ version = "17.4.0+0"
 # ╟─16fdf9c8-975c-4608-af46-7ed6d20bad7a
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
-# ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
+# ╠═6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
