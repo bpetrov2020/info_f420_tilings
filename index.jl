@@ -841,11 +841,13 @@ Expand half BN factorizations to full ones.
 """
 function expand(factors::Vector{Factor}, word_length::Integer)::Vector{Factor}
 	half_length = word_length ÷ 2
+	s(idx) = mod1(idx, word_length)
+
 	forward = factors
 	backward = map(factors) do factor
 		content = backtrack(factor.content)
-		start = factor.start + half_length
-		finish = factor.finish + half_length
+		start = s(factor.start + half_length)
+		finish = s(factor.finish + half_length)
 		Factor(content, start, finish)
 	end
 	append!(forward, backward)
@@ -900,9 +902,15 @@ function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
 	factorization == nothing ? nothing : Some(expand(factorization, length(word)))
 end
 
+# ╔═╡ cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
+factorization = try
+	something(bn_factorization(boundaryWord))
+catch e
+	nothing
+end
+
 # ╔═╡ 3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
 try
-	factorization = bn_factorization(boundaryWord)
 	if factorization != nothing
 		md"There exists a BN factorization for this word!"
 	else
@@ -920,6 +928,15 @@ md"## Notebook related"
 
 # ╔═╡ e32b500b-68b1-4cea-aac5-f6755cfcc5b6
 TableOfContents()
+
+# ╔═╡ 985b959d-038e-4d05-85e7-2f2ca0ab2001
+md"""
+# Appendix B: Authors
+
+- **Edem Lawson**: interactive part, polyomino builder
+- **Boris Petrov**: site setup, BN factorization
+
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1212,6 +1229,7 @@ version = "17.4.0+0"
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
+# ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
@@ -1263,5 +1281,6 @@ version = "17.4.0+0"
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
+# ╟─985b959d-038e-4d05-85e7-2f2ca0ab2001
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
