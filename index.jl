@@ -18,15 +18,13 @@ end
 begin
 	using Base.Iterators
 	using PlutoTest
+	using HypertextLiteral
 end
 
 # ╔═╡ 49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 begin
 	using PlutoUI
 end
-
-# ╔═╡ c84c3cfb-46df-4d5a-93c3-4e34be505488
-using HypertextLiteral
 
 # ╔═╡ 16fdf9c8-975c-4608-af46-7ed6d20bad7a
 md"# Polyominos tilings"
@@ -482,7 +480,7 @@ md"## Interactive showcase"
 
 # ╔═╡ d1ae79ec-4058-4858-915e-54a7a9094d85
 md"""
-Boundary word of Polyomino $P$, $𝓑(P)$= "$boundaryWord"
+Boundary word of Polyomino $P$, $𝐁(P)$= "$boundaryWord"
 
 """
 
@@ -902,6 +900,18 @@ function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
 	factorization == nothing ? nothing : Some(expand(factorization, length(word)))
 end
 
+# ╔═╡ 3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
+try
+	factorization = bn_factorization(boundaryWord)
+	if factorization != nothing
+		md"There exists a BN factorization for this word!"
+	else
+		md"There doesn’t exist a BN factorization for this word…"
+	end
+catch e
+	md"Enter a valid polyomino to evaluate it for a BN factorization."
+end
+
 # ╔═╡ b77fe1fc-86f1-4226-8316-75862f5a2c76
 bn_factorization("rrddrurddrdllldldluullurrruluu")
 
@@ -1201,6 +1211,7 @@ version = "17.4.0+0"
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
+# ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─151513d3-6b7b-4e0f-ad35-3a0fd3f9c905
 # ╟─5751c86d-ca45-4788-b0e2-5fee73595720
@@ -1251,7 +1262,6 @@ version = "17.4.0+0"
 # ╠═b77fe1fc-86f1-4226-8316-75862f5a2c76
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
-# ╠═c84c3cfb-46df-4d5a-93c3-4e34be505488
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
