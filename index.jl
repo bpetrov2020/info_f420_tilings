@@ -484,14 +484,60 @@ Boundary word of Polyomino $P$, $𝐁(P)$= "$boundaryWord"
 
 """
 
+# ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
+md"""
+Size of square $(@bind UNIT Slider(5:20))
+"""
+
+# ╔═╡ 2c07967f-fd4e-4335-af4e-0fbc0313c134
+md"""
+Pan by x = $(@bind xpan Scrubbable(0:10:600)) and y = $(@bind ypan Scrubbable(0:10:300))
+"""
+
+# ╔═╡ ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
+boundary_word = boundaryWord == nothing ? "" : boundaryWord
+
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
 
+# ╔═╡ 18389ab9-4fc4-49f4-9bc9-b855b7c16232
+md"""
+## Tiling drawing
+"""
+
+# ╔═╡ ee001f50-0809-4272-86fb-727fd0fdb654
+const Point = Tuple{Int64, Int64}
+
+# ╔═╡ a0c1f409-c98a-40fb-aee9-93ce587c508e
+const Vec2D = Tuple{Int64, Int64}
+
+# ╔═╡ e25055d1-4ff6-4a2b-a915-4c5c34a44aec
+const Polygon = Vector{Point}
+
+# ╔═╡ 53eb421e-3f88-4789-b077-9e283d76a3c7
+const DIR = [
+	( 1,  0),
+	( 0, -1),
+	(-1,  0),
+	( 0,  1)
+]
+
+# ╔═╡ 7357539a-0888-4cf9-87d4-f03cf9063dd5
+translate(points, vec) = map(p -> p .+ vec, points)
+
+# ╔═╡ 2543a64f-f45a-4881-bcde-98aa94b30a58
+scale(points, scalar) = map(p -> p .* scalar, points)
+
+# ╔═╡ 15b49802-11c5-420d-8227-01555b99de2d
+md"""
+## Factorizations
+"""
+
 # ╔═╡ 092d59e2-d814-48e5-87ca-db6fdfbbe934
-md"## Constants"
+md"### Constants"
 
 # ╔═╡ 3a0b058e-6921-4375-b514-7a05f19a26bb
 const RIGHT = 'r'
@@ -509,10 +555,74 @@ const DOWN = 'd'
 const ALPHABET = [RIGHT, UP, LEFT, DOWN]
 
 # ╔═╡ 9fd065ab-df8e-4058-b84a-d8824cfd60cc
-md"## Helper functions"
+md"### Helper functions"
 
 # ╔═╡ ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
 indexof(letter::Char) = findfirst(x -> x == letter, ALPHABET)
+
+# ╔═╡ 1d99edae-0c8f-465a-bc22-198433d38e95
+"""
+	path_points(path::String)::Polygon
+
+Sequence of points traversed on `path`, starting at `(0, 0)`.
+"""
+function path_points(path::String)::Polygon
+	foldl(path; init=[(0, 0)]) do pts, move
+		push!(pts, pts[end] .+ DIR[indexof(move)])
+	end
+end
+
+# ╔═╡ 06a216bd-e3c0-4561-a0bc-31d86aebd783
+@test path_points("urrdl") == [
+	(0,  0),
+	(0, -1),
+	(1, -1),
+	(2, -1),
+	(2,  0),
+	(1,  0)
+]
+
+# ╔═╡ ee24888e-2f89-4400-bd83-8caa73884c64
+"""
+	generate_tiling(word::String, size::Integer, transforms)::Vector{Polygon}
+
+Generate tiling of polygon described by `word`, of depth `size` and using the `transforms`. These last must be functions on sets of points, such as translations, rotations, etc. They depend on the factorization.
+"""
+function generate_tiling(word::String, size::Integer, transforms)::Vector{Polygon}
+	polygons = []
+	pending = [(0, path_points(word))]
+
+	while !isempty(pending)
+		depth, curr = popfirst!(pending)
+		while curr ∈ polygons
+			depth, curr = popfirst!(pending)
+		end
+		
+		push!(polygons, curr)
+		for transform ∈ transforms
+			next = transform(curr)
+			next_depth = depth + 1
+			if !(next ∈ polygons) && next_depth ≤ size
+				push!(pending, (next_depth, next))
+			end			
+		end
+	end
+
+	polygons
+end
+
+# ╔═╡ 603531e5-59d0-4be9-b6e9-37929f5afd06
+"""
+	path_vector(path::String)::Vec2D
+
+Vector from start to end of path, starting at `(0, 0)`.
+"""
+function path_vector(path::String)::Vec2D
+	foldl((v, m) -> v .+ DIR[indexof(m)], path; init=(0, 0))
+end
+
+# ╔═╡ 2868538a-ee1f-43ac-af62-6603ffff459d
+@test path_vector("ururdddl") == (1, 1)
 
 # ╔═╡ fe33290c-b27c-48bd-8aee-b6f3cd6a5184
 complement(word::String) = String(map(complement, word))
@@ -531,6 +641,9 @@ struct Factor
 	start::Int64
 	finish::Int64
 end
+
+# ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
+const Factorization = Vector{Factor}
 
 # ╔═╡ 5c3bc705-0500-42ae-abce-a2e2da6f06fe
 Base.length(factor::Factor) = length(factor.content)
@@ -747,6 +860,7 @@ end
 Return the admissible factors in `word`.
 """
 function admissible_factors(word::String)::Set{Factor}
+	double_word = twice(word)
 	backtracked = twice(backtrack(word))
 	
 	backed(idx) = length(word) - idx + 1
@@ -761,11 +875,11 @@ function admissible_factors(word::String)::Set{Factor}
 
 		fwd_idx = center
 		bwd_idx = backed(diametral_opposite)
-		R = common_prefix(word[fwd_idx:end], backtracked[bwd_idx:end])
+		R = common_prefix(double_word[fwd_idx:end], backtracked[bwd_idx:end])
 
 		fwd_idx = diametral_opposite
 		bwd_idx = backed(center)
-		L = common_prefix(word[fwd_idx:end], backtracked[bwd_idx:end])
+		L = common_prefix(double_word[fwd_idx:end], backtracked[bwd_idx:end])
 
 		if length(R) == length(L) && !isempty(L)
 			start = s(center - length(L) + 1)
@@ -775,24 +889,24 @@ function admissible_factors(word::String)::Set{Factor}
 	end
 
 	# With center of size 2
-	for i ∈ 1:length(word)-1
+	for i ∈ 1:length(word)
 		l_center = i
-		r_center = i + 1
+		r_center = s(i + 1)
 
 		opposite_l_center = s(length(word) ÷ 2 + l_center + 1)
 		opposite_r_center = opposite_l_center - 1
 
 		fwd_idx = r_center
 		bwd_idx = backed(opposite_r_center)
-		R = common_prefix(word[fwd_idx:end], backtracked[bwd_idx:end])
+		R = common_prefix(double_word[fwd_idx:end], backtracked[bwd_idx:end])
 
 		fwd_idx = opposite_l_center
 		bwd_idx = backed(l_center)
-		L = common_prefix(word[fwd_idx:end], backtracked[bwd_idx:end])
+		L = common_prefix(double_word[fwd_idx:end], backtracked[bwd_idx:end])
 
 		if length(R) == length(L) && !isempty(L)
-			start = r_center - length(L)
-			finish = l_center + length(R)
+			start = s(r_center - length(L))
+			finish = s(l_center + length(R))
 			push!(factors, factor(word, start, finish))
 		end
 	end
@@ -809,12 +923,9 @@ end
 ])
 
 # ╔═╡ 8d84c5dd-8c7d-456c-88fb-91d5a787846a
-# ╠═╡ disabled = true
-#=╠═╡
 #admissible_factors("urrrdlll")
-#admissible_factors("rrddrurddrdllldldluullurrruluu")
-admissible_factors("ururdrrdldllul")
-  ╠═╡ =#
+admissible_factors("rrddrurddrdllldldluullurrruluu")
+#admissible_factors("ururdrrdldllul")
 
 # ╔═╡ 830056cc-efb4-4305-9a69-4f19138eb6db
 """
@@ -841,7 +952,7 @@ function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
 	fac_by_finish = factors_by_finish(adm_factors, length(word))
 	mid_len = length(word) ÷ 2
 	factorization = nothing
-
+	
 	for starting_factors ∈ values(fac_by_start)
 		for A ∈ starting_factors
 			for B ∈	fac_by_start[mod1(A.finish + 1, length(word))]
@@ -884,7 +995,7 @@ function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
 end
 
 # ╔═╡ cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
-factorization = try
+const factorization = try
 	something(bn_factorization(boundaryWord))
 catch e
 	nothing
@@ -904,6 +1015,81 @@ end
 # ╔═╡ b77fe1fc-86f1-4226-8316-75862f5a2c76
 bn_factorization("rrddrurddrdllldldluullurrruluu")
 
+# ╔═╡ a2c420e4-759f-48da-bc59-ffa568e1b23f
+bn_factorization("ururdrrdldllul")
+
+# ╔═╡ 388568b4-2319-4ef6-98f1-306223d2dc41
+bn_factorization("urdrrdldllulur")
+
+# ╔═╡ 7736febe-6492-4a3e-8bd4-3fcf590fe6fc
+"""
+	translation_vectors(word::String, fact::Factorization)::Vector{Vec2D}
+
+Given a word and its BN factorization, give the vectors to the adjacent tiles in a tiling.
+"""
+function translation_vectors(word::String, fact::Factorization)::Vector{Vec2D}
+	hf = length(fact) ÷ 2
+
+	start = fact[1].start
+	finish = fact[hf + 1].finish
+	u = path_vector(extract(word, start, finish))
+
+	start = fact[2].start
+	finish = fact[hf + 2].finish
+	v = path_vector(extract(word, start, finish))
+	
+	@. [u, v, v - u, -u, -v, u - v]
+end
+
+# ╔═╡ f5ee1318-b1a2-4cdc-a459-29d98b8d804e
+"""
+	bn_transformations(word::String, fact::Factorization)
+
+Get translation vectors for a BN factorization as transformations. Useful for `generate_tiling`.
+"""
+function bn_transformations(word::String, fact::Factorization)
+	vecs = translation_vectors(word, fact)
+	map(v -> (pts -> translate(pts, v)), vecs)
+end
+
+# ╔═╡ a058e454-1da6-4882-b1b7-f48e9555378f
+transforms = bn_transformations(boundary_word, factorization)
+
+# ╔═╡ acc326a5-a4a2-44e7-8ca8-90214d0247bf
+tile_polygons = generate_tiling(boundary_word, 20, transforms)
+
+# ╔═╡ 83673640-43fd-4fdb-9757-b603f946d8a2
+tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
+
+# ╔═╡ d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
+@htl("""
+<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
+
+<script id="drawing">
+
+// const svg = this == null ? DOM.svg(600,300) : this
+// const s = this == null ? d3.select(svg) : this.s
+const svg = DOM.svg(680, 300)
+const s = d3.select(svg)
+
+const line = d3.line()
+let data = $tiling
+
+data.forEach((polygon) => {
+	s.append("path")
+		.attr("d", line(polygon))
+		.attr("stroke", "black")
+		.attr("fill", "white")
+})
+
+const output = svg
+output.s = s
+return output
+
+</script>
+
+""")
+
 # ╔═╡ 3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 md"## Notebook related"
 
@@ -914,8 +1100,8 @@ TableOfContents()
 md"""
 # Appendix B: Authors
 
-- **Edem Lawson**: interactive part, polyomino builder
-- **Boris Petrov**: site setup, BN factorization
+- **Edem Lawson**: polyomino builder
+- **Boris Petrov**: site setup, BN factorization, tilings drawing
 
 """
 
@@ -1224,9 +1410,29 @@ version = "17.4.0+0"
 # ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
 # ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
 # ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
+# ╟─2bb6b38f-c1be-431e-a383-aa3604148c54
+# ╟─2c07967f-fd4e-4335-af4e-0fbc0313c134
+# ╟─d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
+# ╟─ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
+# ╟─a058e454-1da6-4882-b1b7-f48e9555378f
+# ╟─acc326a5-a4a2-44e7-8ca8-90214d0247bf
+# ╟─83673640-43fd-4fdb-9757-b603f946d8a2
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
+# ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
+# ╟─ee001f50-0809-4272-86fb-727fd0fdb654
+# ╟─a0c1f409-c98a-40fb-aee9-93ce587c508e
+# ╟─e25055d1-4ff6-4a2b-a915-4c5c34a44aec
+# ╟─53eb421e-3f88-4789-b077-9e283d76a3c7
+# ╟─7357539a-0888-4cf9-87d4-f03cf9063dd5
+# ╟─2543a64f-f45a-4881-bcde-98aa94b30a58
+# ╟─1d99edae-0c8f-465a-bc22-198433d38e95
+# ╟─06a216bd-e3c0-4561-a0bc-31d86aebd783
+# ╟─603531e5-59d0-4be9-b6e9-37929f5afd06
+# ╟─2868538a-ee1f-43ac-af62-6603ffff459d
+# ╟─ee24888e-2f89-4400-bd83-8caa73884c64
+# ╟─15b49802-11c5-420d-8227-01555b99de2d
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
 # ╟─3a0b058e-6921-4375-b514-7a05f19a26bb
 # ╟─473faf5a-8152-44b7-b3f3-265a87d89391
@@ -1234,22 +1440,23 @@ version = "17.4.0+0"
 # ╟─5754ff07-4a06-40eb-b15e-9e1a2f135395
 # ╟─dab01fba-d85b-4956-94c4-b8d2a6933165
 # ╟─9fd065ab-df8e-4058-b84a-d8824cfd60cc
-# ╠═ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
-# ╠═5592d3ff-30a3-4be7-9ce6-3894ef76c79d
-# ╠═556054b0-23e5-4bef-8356-ffdbb99cdcd2
-# ╠═fe33290c-b27c-48bd-8aee-b6f3cd6a5184
-# ╠═24c55137-7470-4b2a-9948-9e4ec23aa11c
-# ╠═642e20fa-5582-418b-ae66-7ec493209736
-# ╠═291e04ef-a5dd-4cd2-a598-f2256e6643e0
+# ╟─ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
+# ╟─5592d3ff-30a3-4be7-9ce6-3894ef76c79d
+# ╟─556054b0-23e5-4bef-8356-ffdbb99cdcd2
+# ╟─fe33290c-b27c-48bd-8aee-b6f3cd6a5184
+# ╟─24c55137-7470-4b2a-9948-9e4ec23aa11c
+# ╟─642e20fa-5582-418b-ae66-7ec493209736
+# ╟─291e04ef-a5dd-4cd2-a598-f2256e6643e0
 # ╟─3e4a972f-6b44-41a6-91d2-3f949b9b7004
 # ╠═70fba921-5e52-4b04-84e0-397087f0005c
-# ╠═cd430387-c391-4360-921b-3ca958a70d47
+# ╟─9dac7d76-e344-4cce-bedd-ae6cb4bec111
+# ╟─cd430387-c391-4360-921b-3ca958a70d47
 # ╟─cd7d4c8f-b910-4b9f-95a5-0054c0e01ee7
 # ╟─5c94888b-2196-4124-b731-8d74b19c3f76
 # ╠═5c3bc705-0500-42ae-abce-a2e2da6f06fe
 # ╟─19742340-925a-49cf-b2dd-109201492bb2
 # ╟─e9d30d5f-1ef9-4d9b-9a88-7475907faf3a
-# ╠═78ea5c1f-1212-430c-811e-456a3542358e
+# ╟─78ea5c1f-1212-430c-811e-456a3542358e
 # ╟─425433a9-5fd8-4860-a5ad-58d5f5aeb7f0
 # ╟─ecc3548e-b639-4fdc-bf23-2f2096eecb71
 # ╟─5ea887e6-e435-46fd-bd5b-62a88cb79241
@@ -1263,12 +1470,16 @@ version = "17.4.0+0"
 # ╟─0806d4f5-89ed-46a1-8c65-f1e797dc6977
 # ╟─abceaed4-8a67-416a-a8aa-f0c77f9c3b2a
 # ╟─cb0f1693-50a1-4655-bf5f-dc2eeaf8e8fa
-# ╠═f5cc61b3-b844-48d7-898b-4206506c0dae
+# ╟─f5cc61b3-b844-48d7-898b-4206506c0dae
 # ╟─0ea45964-96b7-438c-a47a-609e4cd4fed0
 # ╟─8d84c5dd-8c7d-456c-88fb-91d5a787846a
-# ╠═830056cc-efb4-4305-9a69-4f19138eb6db
-# ╠═99d849e7-f9cc-4ab8-af5a-dce0bc1f8543
+# ╟─830056cc-efb4-4305-9a69-4f19138eb6db
+# ╟─99d849e7-f9cc-4ab8-af5a-dce0bc1f8543
 # ╠═b77fe1fc-86f1-4226-8316-75862f5a2c76
+# ╠═a2c420e4-759f-48da-bc59-ffa568e1b23f
+# ╠═388568b4-2319-4ef6-98f1-306223d2dc41
+# ╟─7736febe-6492-4a3e-8bd4-3fcf590fe6fc
+# ╟─f5ee1318-b1a2-4cdc-a459-29d98b8d804e
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
