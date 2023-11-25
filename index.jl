@@ -34,24 +34,48 @@ md"## Introduction"
 
 # ╔═╡ 870e528d-678e-497e-893d-72d3b7b0eab0
 md"""
-A large chunk of computational geometry works with simple polygons, with them being one of the most basic building blocks. They are studied in contexts of intersections, triangulations, and many others. One such area of study is that of _plane tilings_ (or _tesselations_).
+Polygons are of the most basic building blocks in computational geometry. Many areas of study exist, including intersections and triangulations among others. One such area of study is that of _tesselations_ (or _plane tilings_).
 
 Given a set of polygons $P$, can we fill the entire plane with copies of $p∈P$ so that no portion of the plane is left uncovered. That is, can we put copies of the polygons next to each other without leaving gaps in between. This innocent-looking problem turns out to be a very difficult one.
 
 For this problem, even polygons are much too complex to reason with. However, we may impose constraints on both the kind of tiling and the types of polygons that are used to create easier problems and perhaps grasp at a solution. We present here a version using only one _polyomino_ and in the context of _isohedral_ tilings.
 
-A _polyomino_ is a polygon formed of glued-together unit-length squares with no inner holes. Whereas a tiling is said to be _isohedral_, if any two copies can be mapped to one another. Intuitively, it means that the tiling is locally similar, that is, taking any one copy independently and considering its neighborhood, we cannot distinguish it from the other copies.
+A _polyomino_ is a polygon formed of glued-together unit-length squares with no inner holes. Whereas a tiling is said to be _isohedral_, if any two copies can be mapped to one another. Intuitively, it means that the tiling is locally similar, that is, taking any two copies and considering their neighborhood, we cannot distinguish them from from one another.
 """
 
 # ╔═╡ 13b287d8-6340-4570-9f7c-ed9eab4bdd2c
 md"""
 Here’s an example showing two tesselations of the plane with polyominos. Both use only one shape, but only the second one is isohedral. In the first, only shapes of the same color may be mapped to one another.
+"""
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Conway_criterion_false_negative_nonominoes.svg/1024px-Conway_criterion_false_negative_nonominoes.svg.png)
+# ╔═╡ 306500a9-e4de-4ae8-a05b-57e768202170
+PlutoUI.Resource(
+	"https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Conway_criterion_false_negative_nonominoes.svg/1024px-Conway_criterion_false_negative_nonominoes.svg.png",
+	:height => 350,
+	:style => "margin: 0px auto 0px; display:block;"
+)
+
+# ╔═╡ f0942786-6415-4d2b-a41a-aa06d250f798
+md"""
+_Credits: Wikipedia_
 """
 
 # ╔═╡ 45d3575a-c887-435c-84be-a26284ee5dcb
 md"## Interactive showcase"
+
+# ╔═╡ 3a52dfb0-ae3f-48a7-87ff-c456db61fe15
+md"""
+Before delving into the theoretical explanations of how we determine whether a polyomino can tile the plane, we propose first an interactive activity. The grid right below is a _polyomino builder_ and allows you to create your very own polyomino. You can click on the squares to add them to your polyomino and, once finished, hit the ‘Done’ button and see whether your polyomino can tile the plane!
+
+This can be thought as a game in which you must guess whether the polyomino can tile the plane, before verifying your intuition. Have fun and try to find the most esoteric polyominos tiling the plane!
+
+> The notebook must be run in order to use the interactive elements.
+"""
+
+# ╔═╡ 6802038f-0d12-455e-9df6-875a11c0f7d3
+md"""
+### Polyomino builder
+"""
 
 # ╔═╡ 6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 @htl("""
@@ -72,7 +96,7 @@ md"## Interactive showcase"
 	}
 	
 	.button.clicked {
-		border: 3px solid red;
+		border: 3px solid #FF7562;
 	}
 	.button.top {
 		border-top: 1px dotted #8c8c8c;
@@ -88,7 +112,7 @@ md"## Interactive showcase"
 	}
 
 	.button.fill-red {
-		background-color: red;
+		background-color: #FF7562;
 	}
 
 	.button.fill-white {
@@ -185,15 +209,15 @@ md"## Interactive showcase"
 	}
 	
 	.cmd-button:nth-child(1) {
-		background-color: #00e600; 
+		background-color: #83BF8A; 
 	}
 	
 	.cmd-button:nth-child(2) {
-		background-color: #668cff; 
+		background-color: #5C8CCD; 
 	}
 	
 	.cmd-button:nth-child(3) {
-		background-color: #ff1a1a;
+		background-color: #FF7562;
 	}
 	
 	.cmd-button:hover {
@@ -478,30 +502,69 @@ md"## Interactive showcase"
 </span>
 """)
 
-# ╔═╡ d1ae79ec-4058-4858-915e-54a7a9094d85
+# ╔═╡ 1544010c-9a45-4ea3-ab0a-6ffe24648ec8
 md"""
-Boundary word of Polyomino $P$, $𝐁(P)$= "$boundaryWord"
-
+### Plane Tiling
 """
 
 # ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
 md"""
-Size of square $(@bind UNIT Slider(5:20))
+**Pan** (x = $(@bind xpan Scrubbable(0:10:600)), y = $(@bind ypan Scrubbable(0:10:300))) & **Zoom** $(@bind UNIT Slider(5:30))
 """
-
-# ╔═╡ 2c07967f-fd4e-4335-af4e-0fbc0313c134
-md"""
-Pan by x = $(@bind xpan Scrubbable(0:10:600)) and y = $(@bind ypan Scrubbable(0:10:300))
-"""
-
-# ╔═╡ ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
-boundary_word = boundaryWord == nothing ? "" : boundaryWord
 
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
 
+# ╔═╡ 27aa8b5d-bb9c-493f-b256-8503c8d4177d
+md"""
+The problem may seem daunting at first since the plane is infinite and there are possibly infinite many ways to arrange an infinite set of polyominos, however, we shall note two things: first, we are only interested in whether there exists a tiling, and not in enumerating every tiling possible, and second since the tilings we study are isohedral, we may restrict ourselves to only the direct neighborhood of one polyomino.
+
+The last fact arises from the definition of isohedral, that is, in such a tiling we can map any polyomino of the plane to another by a set of transformations of the plane. For this to be possible, every polyomino must have the same neighborhood as any other, otherwise the property would not hold. We can say that the plane must be locally congruent.
+
+This is great news, we have reduced our problem of tiling the plane, to one of arranging copies of the polyomino around itself. We could think that finding a neighborhood that leaves no gaps would solve the problem since we could just apply the same neighborhood to each copy, however, this is not the case.
+"""
+
+# ╔═╡ 462623f2-1968-4fe5-89af-c9fbcdd5b49a
+md"""
+The following example shows a surrounding that leaves no gaps, yet doesn’t produce an isohedral tiling. We can convince ourselves by looking at the green and the red polyominos. The red one has its notch filled by the short tail of the polyomino, which is not the case for the green one. Therefore, we cannot map the red one to the green one, and this cannot produce an isohedral tiling.
+"""
+
+# ╔═╡ 81196bee-bee2-4788-bf5f-3f60f7e668df
+PlutoUI.LocalResource("./res/surround_bad.svg", :height => 250, :width=>"100%")
+
+# ╔═╡ 3878e012-c80d-4b93-af22-901187b933d8
+md"""
+### Polyominos as words
+"""
+
+# ╔═╡ 600d4c07-f5c2-418c-acbb-d6142155e74e
+md"""
+### Factorizations
+"""
+
+# ╔═╡ 2139c37b-422d-4524-9bf8-e59dbfa105fc
+md"""
+The main idea be
+"""
+
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
+
+# ╔═╡ 58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
+md"""
+## Current factorization state
+"""
+
+# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
+begin
+	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
+	
+	md"""
+	The boundary of the polyomino $P$ is:
+	
+	$(bw)
+	"""
+end
 
 # ╔═╡ 18389ab9-4fc4-49f4-9bc9-b855b7c16232
 md"""
@@ -530,6 +593,41 @@ translate(points, vec) = map(p -> p .+ vec, points)
 
 # ╔═╡ 2543a64f-f45a-4881-bcde-98aa94b30a58
 scale(points, scalar) = map(p -> p .* scalar, points)
+
+# ╔═╡ a697e811-0507-4be4-b6fb-43fde5c7f9f5
+function rotate(pts, θ; first_idx = 1)
+	fst = pts[first_idx]
+
+	if θ == 180
+		pts .|> (pt -> pt .- fst) .|> (.-) .|> (pt -> pt .+ fst)
+	end
+end
+
+# ╔═╡ 0c81f834-1194-4460-bfd7-45da0e051d2d
+function mirror(pts, θ; first_idx = 1)
+	@assert θ ∈ [-45, 0, 45, 90]
+	
+	fst = pts[first_idx]
+	pts = pts .|> (pt -> pt .- fst)
+
+	if θ == -45
+		pts = pts .|> (pt -> (-pt[2], -pt[1]))
+	elseif θ == 0
+		pts = pts .|> (pt -> (pt[1], -pt[2]))
+	elseif θ == 45
+		pts = pts .|> (pt -> (pt[2], pt[1]))
+	elseif θ == 90
+		pts = pts .|> (pt -> (-pt[1], pt[2]))
+	end
+
+	pts .|> (pt -> pt .+ fst)
+end
+
+# ╔═╡ 37f103c4-65e4-4064-b651-eb5e3db06b60
+@test rotate([(1, 1), (1, 2)], 180) == [(1,1), (1, 0)]
+
+# ╔═╡ 7a29d558-f01c-4aba-b8c3-85d84ff88776
+@test rotate(rotate([(1,1), (1,2)], 180), 180) == [(1, 1), (1,2)]
 
 # ╔═╡ 15b49802-11c5-420d-8227-01555b99de2d
 md"""
@@ -595,7 +693,15 @@ function generate_tiling(word::String, size::Integer, transforms)::Vector{Polygo
 	while !isempty(pending)
 		depth, curr = popfirst!(pending)
 		while curr ∈ polygons
-			depth, curr = popfirst!(pending)
+			depth, curr = if !isempty(pending)
+				popfirst!(pending)
+			else
+				nothing, nothing
+			end
+		end
+
+		if isnothing(curr)
+			break
 		end
 		
 		push!(polygons, curr)
@@ -630,6 +736,14 @@ complement(word::String) = String(map(complement, word))
 # ╔═╡ 291e04ef-a5dd-4cd2-a598-f2256e6643e0
 twice(word::String) = repeat(word, 2)
 
+# ╔═╡ e053352a-9582-416b-a110-80ae726c0552
+function getfirst(p, itr)
+    for el in itr
+        p(el) && return el
+    end
+    return nothing
+end
+
 # ╔═╡ 3e4a972f-6b44-41a6-91d2-3f949b9b7004
 md"""
 ### Factors
@@ -645,6 +759,31 @@ end
 # ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
 const Factorization = Vector{Factor}
 
+# ╔═╡ d75dc891-3b79-4be8-9564-6eef1bdba3da
+"""
+Word from factorization, with first letter the first char of the first factor.
+"""
+function canonic_word(fact::Factorization)
+	fact .|> (f -> f.content) |> join
+end
+
+# ╔═╡ a71c4616-be41-4460-a23f-543f46851517
+@enum FactorizationKind begin
+	Translation
+	HalfTurn
+	QuarterTurn
+	TypeOneReflection
+	TypeTwoReflection
+	TypeOneHalfTurnReflection
+	TypeTwoHalfTurnReflection
+end
+
+# ╔═╡ ffd79659-26d5-4447-82cf-6e2a5f506dc6
+struct BWFactorization
+	fact::Factorization
+	kind::FactorizationKind
+end
+
 # ╔═╡ 5c3bc705-0500-42ae-abce-a2e2da6f06fe
 Base.length(factor::Factor) = length(factor.content)
 
@@ -652,11 +791,14 @@ Base.length(factor::Factor) = length(factor.content)
 function tθ(letter::Char, θ::Int64)
 	@assert θ % 90 == 0
 
-	rot = (θ ÷ 90) % 3
+	rot = (θ ÷ 90) % 4
 	idx = mod1(indexof(letter) + rot, length(ALPHABET))
 	
 	ALPHABET[idx]
 end
+
+# ╔═╡ 55990d0e-1418-4bd6-a1c1-f75cb74cb958
+@test tθ('u', 360) == 'u'
 
 # ╔═╡ 556054b0-23e5-4bef-8356-ffdbb99cdcd2
 complement(letter::Char) = tθ(letter, 180)
@@ -714,6 +856,9 @@ function factor(word::String, start::Int64, finish::Int64)::Factor
 	Factor(extract(word, start, finish), start, finish)
 end
 
+# ╔═╡ 31124ccb-2e65-4281-85b8-c355ec6a9b4d
+@test canonic_word([factor("hello", 2, 4), factor("hello", 5, 1)]) == "elloh"
+
 # ╔═╡ cd7d4c8f-b910-4b9f-95a5-0054c0e01ee7
 @test factor("polyomino", 2, 7) == Factor("olyomi", 2, 7)
 
@@ -749,57 +894,23 @@ end
 # ╔═╡ 8a3d3c83-c88f-48d7-b54a-5d3c92d3b54c
 @test common_prefix("abc", "def") == ""
 
-# ╔═╡ 17c4fc0e-9be1-41ab-8958-ff66627ccd06
-# ╠═╡ disabled = true
-#=╠═╡
-function longest_common_factor(a::String, b::String)::Union{String, Nothing}
-	aa = a
-    bb = b
-	factor = ""
-    for i ∈ eachindex(a)
-		for j ∈ eachindex(b)
-            s = 0
-            while i+s ≤ length(a) && j+s ≤ length(b) && a[i+s] == b[j+s]
-            	s += 1
-            end
-			if s != 0 && s > length(factor)
-				factor = a[i:i+s-1]
-			end
-        end
-    end
-	factor
-end
-  ╠═╡ =#
-
-# ╔═╡ aff885f3-1157-47d6-80b7-11c8b6344ec6
-# ╠═╡ disabled = true
-#=╠═╡
-@test longest_common_factor("xhelloy", "yhellox") == "hello"
-  ╠═╡ =#
-
-# ╔═╡ 4bb7ad14-8698-4bd9-bc27-acbcb3aa6d5f
-# ╠═╡ disabled = true
-#=╠═╡
-function admissible_factors(word::String)
-	comp = twice(complement(word))
-	rev  = twice(reverse(word))
-	back = twice(backtrack(word))
-
-	for i ∈ 1:length(word)
-		start_word = i + 1
-		start_back = mod1(length(word) ÷ 2 - (i + 1), length(word))
-		R = longest_common_factor(word[start_word:end], back[start_back:end])
-		
-		start_rev = mod1(length(word) ÷ 2 - i, length(word))
-		start_comp = i
-		L = longest_common_factor(rev[start_rev:end], comp[start_comp:end])
-
-		if length(R) == length(L) && !isempty(L)
-			println("$i => $L$R")
-		end
+# ╔═╡ e9d48d9d-c1fa-410f-8431-1fe4794ae3e4
+function longest_common_suffix(a::String, b::String)
+	max_bound = min(length(a), length(b))
+	bound = 0
+	
+	while bound < max_bound && a[end - bound] == b[end - bound]
+		bound += 1
 	end
+	
+	a[end - bound + 1:end]
 end
-  ╠═╡ =#
+
+# ╔═╡ 368eab32-e52d-4cc8-9396-56602822e3ca
+@test longest_common_suffix("abcd", "abcd") == "abcd"
+
+# ╔═╡ 29cb373a-95ba-4938-87e8-401123dc517a
+@test longest_common_suffix("abc", "def") == ""
 
 # ╔═╡ ed19093c-0f09-4a19-9cfd-98e24005b7c8
 """
@@ -946,7 +1057,7 @@ function expand(factors::Vector{Factor}, word_length::Integer)::Vector{Factor}
 end
 
 # ╔═╡ 99d849e7-f9cc-4ab8-af5a-dce0bc1f8543
-function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
+function bn_factorization(word::String)::Union{BWFactorization, Nothing}
 	adm_factors = admissible_factors(word)
 	fac_by_start = factors_by_start(adm_factors, length(word))
 	fac_by_finish = factors_by_finish(adm_factors, length(word))
@@ -991,35 +1102,21 @@ function bn_factorization(word::String)::Union{Some{Vector{Factor}}, Nothing}
 		end
 	end
 
-	factorization == nothing ? nothing : Some(expand(factorization, length(word)))
-end
-
-# ╔═╡ cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
-const factorization = try
-	something(bn_factorization(boundaryWord))
-catch e
-	nothing
-end
-
-# ╔═╡ 3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
-try
-	if factorization != nothing
-		md"There exists a BN factorization for this word!"
+	if factorization == nothing
+		nothing
 	else
-		md"There doesn’t exist a BN factorization for this word…"
+		BWFactorization(expand(factorization, length(word)), Translation)
 	end
-catch e
-	md"Enter a valid polyomino to evaluate it for a BN factorization."
 end
 
 # ╔═╡ b77fe1fc-86f1-4226-8316-75862f5a2c76
-bn_factorization("rrddrurddrdllldldluullurrruluu")
+@test !isnothing(bn_factorization("rrddrurddrdllldldluullurrruluu"))
 
 # ╔═╡ a2c420e4-759f-48da-bc59-ffa568e1b23f
-bn_factorization("ururdrrdldllul")
+@test !isnothing(bn_factorization("ururdrrdldllul"))
 
 # ╔═╡ 388568b4-2319-4ef6-98f1-306223d2dc41
-bn_factorization("urdrrdldllulur")
+@test !isnothing(bn_factorization("urdrrdldllulur"))
 
 # ╔═╡ 7736febe-6492-4a3e-8bd4-3fcf590fe6fc
 """
@@ -1052,43 +1149,419 @@ function bn_transformations(word::String, fact::Factorization)
 	map(v -> (pts -> translate(pts, v)), vecs)
 end
 
-# ╔═╡ a058e454-1da6-4882-b1b7-f48e9555378f
-transforms = bn_transformations(boundary_word, factorization)
+# ╔═╡ eb67c8bf-b5ac-4508-bdd8-88c0d01101f3
+md"""
+### Half-Turn Factorization
+"""
 
-# ╔═╡ acc326a5-a4a2-44e7-8ca8-90214d0247bf
-tile_polygons = generate_tiling(boundary_word, 20, transforms)
+# ╔═╡ a278b48b-a695-4ebe-a48b-5ce251fab378
+function isΘdrome(w::String, θ::Int64)::Bool
+	i = 1
+	j = w |> length
 
-# ╔═╡ 83673640-43fd-4fdb-9757-b603f946d8a2
-tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
+	valid = true
+	while i ≤ j && valid
+		valid = w[i] == tθ(w[j], θ+180)
+		i += 1
+		j -= 1
+	end
+
+	valid	
+end
+
+# ╔═╡ b02c5236-bc24-40ab-b452-3b3e61853016
+ispalindrome(w::String) = isΘdrome(w, 180)
+
+# ╔═╡ 4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
+@test ispalindrome("urdlldru")
+
+# ╔═╡ 8c8cab8e-2922-4f39-8614-c9b45266ff9f
+function half_turn(w::String)::Union{BWFactorization, Nothing}
+	l = length(w)
+	s(i) = mod1(i, l)
+	
+	for A_start ∈ 1:l
+		for B_start ∈ A_start+1:A_start+1+l-5
+			A = factor(w, A_start, s(B_start-1))
+			
+			for C_start ∈ B_start+1:B_start+1+l-4
+				B = factor(w, s(B_start), s(C_start-1))
+				if B.content |> ispalindrome
+					
+					for Â_start ∈ C_start+1:C_start+1+l-3
+						C = factor(w, s(C_start), s(Â_start-1))
+						if C.content |> ispalindrome
+							
+							for D_start ∈ Â_start+1:Â_start+1+l-2
+								Â = factor(w, s(Â_start), s(D_start-1))
+								if A.content == Â.content |> backtrack
+								
+									for E_start ∈ D_start+1:D_start+1+l-1
+										D = factor(w, s(D_start), s(E_start-1))
+										E = factor(w, s(E_start), s(A_start-1))
+
+										d = D.content |> ispalindrome
+										e = E.content |> ispalindrome
+										
+										if d && e
+											return BWFactorization(
+												[A, B, C, Â, D, E],
+												HalfTurn
+											)
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ 2cea2c5c-3942-473c-a231-0d4450346bf6
+@test !(half_turn("rddrurdruuurdrdrdrdldrddrdllululdddluldluullurrulllllurruuur") |> isnothing)
+
+# ╔═╡ 1e6d83b3-de76-41c4-92f9-000e25670dbb
+function half_turn_transformations(word::String, fact::Factorization)
+	start = fact[1].start
+	finish = fact[4].finish
+	t1 = path_vector(extract(word, start, finish))
+	
+	[
+		(pts -> translate(pts, t1)),
+		(pts -> translate(pts, .-t1)),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			te = pts[fact[6].start] .- pts[fact[1].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			te = pts[fact[6].start] .- pts[fact[1].start]
+			td = pts[fact[5].start] .- pts[fact[1].start]
+			translate(r, td .+ te)
+		end),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			a = pts[fact[2].start] .- pts[fact[1].start]
+			t = pts[fact[3].start] .- pts[fact[2].start]
+			translate(r,  2 .* a .+ t)
+		end),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			a = pts[fact[2].start] .- pts[fact[1].start]
+			tb = pts[fact[3].start] .- pts[fact[2].start]
+			tc = pts[fact[4].start] .- pts[fact[2].start]
+			translate(r,  2 .* a .+ tb .+ tc)
+		end),
+	]
+end
+
+# ╔═╡ 0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
+md"""
+### Type-1 Reflection
+"""
+
+# ╔═╡ 1b70eda1-8aaa-4415-96a0-dfa042f8b536
+function isreflection(a::String, b::String, θ::Int64)::Bool
+	length(a) == length(b) && zip(a, b) .|> (p -> first(p) == fθ(last(p), θ)) |> all
+end
+
+# ╔═╡ a4092512-3cf2-4e1f-9ef3-188a7151b0a4
+@test isreflection("rr", "uu", 45)
+
+# ╔═╡ 3477d9cc-23a0-4feb-8518-c973b3b3834f
+function isanyreflection(a::String, b::String)
+	[-45, 0, 45, 90] .|> (θ -> isreflection(a, b, θ)) |> any
+end
+
+# ╔═╡ 36fe3ab8-832a-4b66-bde2-67ab323c5cef
+isanyreflection(a::Factor, b::Factor) = isanyreflection(a.content, b.content)
+
+# ╔═╡ aad243e7-aa8c-4a72-951a-8e98f81101a3
+@test isanyreflection("rr", "ll")
+
+# ╔═╡ b8662be9-ece0-4c22-b165-ac5f764dc876
+function type_one_reflection(w::String)::Union{BWFactorization, Nothing}
+	l = length(w)
+	m = l ÷ 2
+	s(i) = mod1(i, l)
+
+	for A_start ∈ 1:l
+
+		B_start_max = A_start + (l - 2) ÷ 2 - 1
+		for B_start ∈ A_start+1:B_start_max
+
+			for B_size ∈ 1:(l-2)÷2 - 1
+				BF_start = B_start + B_size
+				Â_start = BF_start + B_size
+				
+				C_start = Â_start + (B_start - A_start)
+				CF_start = C_start + ((A_start + l) - C_start) ÷ 2
+
+				A = factor(w, A_start, s(B_start-1))
+				Â = factor(w, s(Â_start), s(C_start-1))
+				
+				B = factor(w, s(B_start), s(BF_start-1))
+				BF = factor(w, s(BF_start), s(Â_start-1))
+				
+				C = factor(w, s(C_start), s(CF_start-1))
+				CF = factor(w, s(CF_start), s(A_start + l - 1))
+
+				if (A.content == Â.content |> backtrack
+					&& isanyreflection(B, BF)
+					&& isanyreflection(C, CF))
+					return BWFactorization(
+						[A, B, BF, Â, C, CF],
+						TypeOneReflection
+					)
+				end
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ a25d4c5e-542f-4709-8f1f-b8adba8391c0
+@test !(type_one_reflection("urrrdrdddrurdddddlulddlullldluululuuururur") |> isnothing)
+
+# ╔═╡ 255ee00f-eafb-458f-959f-97bc99023ea6
+function reflection_angle(a::String, b::String)
+	getfirst(θ -> isreflection(a, b, θ), [-45, 0, 45, 90])
+end
+
+# ╔═╡ 2058d788-5faa-460a-ba8f-ef40699b78e0
+reflection_angle(a::Factor, b::Factor) = reflection_angle(a.content, b.content)
+
+# ╔═╡ 0583a651-61e8-4193-8bf6-b03cd8de0179
+function type_one_reflection_transformations(word::String, fact::Factorization)
+	start = fact[1].start
+	finish = fact[4].finish
+	t1 = path_vector(extract(word, start, finish))
+
+	# We can have only one reflection angle for both B and C, it’s used for tiling
+	θ = reflection_angle(fact[2], fact[3])
+
+	# Invert for 45 because the plane’s y axis is point downwards
+	θ = θ ∈ [45, -45] ? -θ : θ
+	
+	[
+		(pts -> translate(pts, t1)),
+		(pts -> translate(pts, .-t1)),
+		(pts -> begin
+			m = mirror(pts, θ; first_idx = fact[1].start)
+			tc = pts[fact[6].start] .- pts[fact[5].start]
+			translate(m, tc)
+		end),		
+		(pts -> begin
+			m = mirror(pts, θ; first_idx = fact[2].start)
+			tc = pts[fact[3].start] .- pts[fact[4].start]
+			translate(m, tc)
+		end),
+	]
+end
+
+# ╔═╡ 93359dda-78df-4f44-b15e-bc202c77b47d
+md"""
+### Type-2 Reflection
+"""
+
+# ╔═╡ 4eb10ee7-e5b9-4306-a8e1-9d7dfd5dc268
+function type_two_reflection(w::String)
+	l = length(w)
+	m = l ÷ 2
+	s(i) = mod1(i, l)
+
+	for A_start ∈ 1:l
+		Â_start = A_start + m
+
+		for B_start ∈ A_start+1:Â_start-3
+			CL_start = B_start + m
+
+			A = factor(w, s(A_start), s(B_start-1))
+			Â = factor(w, s(Â_start), s(CL_start-1))
+			
+			if A.content == Â.content |> backtrack
+
+				for C_start ∈ B_start+2:Â_start-2
+					BL_start = CL_start + (Â_start-C_start)
+
+					B = factor(w, s(B_start), s(C_start-1))
+					C = factor(w, s(C_start), s(Â_start-1))
+
+					CL = factor(w, s(CL_start), s(BL_start-1))
+					BL = factor(w, s(BL_start), s(A_start+l-1))
+
+					if isanyreflection(B, BL) && isanyreflection(C, CL)
+						return BWFactorization(
+							[A, B, C, Â, CL, BL],
+							TypeTwoReflection
+						)
+					end
+				end
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ 8665a82d-69ac-4a6b-aac5-20b333e5026d
+function anyfactorization(w::String)
+	getfirst(
+		(!isnothing),
+		map(
+			f -> f(w),
+			[
+				bn_factorization,
+				half_turn,
+				type_one_reflection,
+				type_two_reflection
+			]
+		)
+	)
+end
+
+# ╔═╡ ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
+@test !(type_two_reflection("druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur") |> isnothing)
+
+# ╔═╡ 9d3a0e5c-ea42-4924-bc0f-1fcb478626d7
+function type_two_reflection_transformations(word::String, fact::Factorization)
+	start = fact[1].start
+	finish = fact[4].finish
+	t1 = path_vector(extract(word, start, finish))
+
+	# We can have only one reflection angle for both B and C, it’s used for tiling
+	θ = reflection_angle(fact[2], fact[6])
+
+	# Invert for 45 because the plane’s y axis is point downwards
+	θ = θ ∈ [45, -45] ? -θ : θ
+	
+	[
+		(pts -> translate(pts, t1)),
+		(pts -> translate(pts, .-t1)),
+		(pts -> begin
+			m = mirror(pts, θ; first_idx = fact[3].start)
+			tc = pts[fact[5].start] .- pts[fact[3].start]
+			translate(m, tc)
+		end),		
+		(pts -> begin
+			m = mirror(pts, θ; first_idx = fact[5].start)
+			tc = pts[fact[3].start] .- pts[fact[5].start]
+			translate(m, tc)
+		end),
+	]
+end
+
+# ╔═╡ 5bd78da2-2445-4846-9b03-640f27917895
+function transformations(bw::String, fact::BWFactorization)
+	if fact.kind == Translation
+		bn_transformations(bw, fact.fact)
+	elseif fact.kind == HalfTurn
+		half_turn_transformations(bw, fact.fact)
+	elseif fact.kind == TypeOneReflection
+		type_one_reflection_transformations(bw, fact.fact)
+	elseif fact.kind == TypeTwoReflection
+		type_two_reflection_transformations(bw, fact.fact)
+	end
+end
+
+# ╔═╡ 9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+begin
+	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
+		boundary_word = ""
+		factorization = nothing
+		transforms = nothing
+		tiling = []
+	else
+		boundary_word = boundaryWord
+		factorization = anyfactorization(boundaryWord)
+		
+		if factorization |> !isnothing
+			transforms = transformations(boundary_word, factorization)
+			tile_polygons = generate_tiling(boundary_word, 10, transforms)
+			tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
+		else
+			transforms = nothing
+			tiling = []
+		end
+	end
+	nothing
+end
+
+# ╔═╡ 7b9d22c3-c2de-40d8-b268-194adee6b58c
+if ismissing(boundary_word) || isnothing(boundary_word) || isempty(boundary_word)
+	Markdown.MD(Markdown.Admonition(
+		"info",
+		"No polyomino to work with",
+		[md"Enter a valid polyomino to see whether it can tile the plane!"]
+	))
+elseif isnothing(factorization)
+	Markdown.MD(Markdown.Admonition(
+		"warning",
+		"Tiling doesn’t exist",
+		[md"There exists no isohedral tiling with this polyomino. Try another one!"]
+	))
+else
+	Markdown.MD(Markdown.Admonition(
+		"success",
+		"Tiling exists",
+		[md"An isohedral tiling with this polyomino exists, congratulations! Try another one!"]
+	))
+end
 
 # ╔═╡ d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
-@htl("""
-<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
 
-<script id="drawing">
+	@htl("""
+	<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
+	
+	<script id="drawing">
+	
+	
+	// const svg = this == null ? DOM.svg(600,300) : this
+	// const s = this == null ? d3.select(svg) : this.s
+	
+	const svg = DOM.svg("100%", 300)
+	const s = d3.select(svg)
+	
+	s.append("rect")
+	    .attr("width", "100%")
+	    .attr("height", "100%")
+	    .attr("fill", "white");
+	
+	const line = d3.line()
+	let data = $tiling
+	
+	data.forEach((polygon) => {
+		s.append("path")
+			.attr("d", line(polygon))
+			.attr("stroke", "black")
+			.attr("fill", "white")
+	})
+	
+	const output = svg
+	output.s = s
+	return output
+	
+	</script>
+	
+	""")
 
-// const svg = this == null ? DOM.svg(600,300) : this
-// const s = this == null ? d3.select(svg) : this.s
-const svg = DOM.svg(680, 300)
-const s = d3.select(svg)
 
-const line = d3.line()
-let data = $tiling
+# ╔═╡ 4ce6ca14-fa12-4440-a7da-19adda76ed96
+md"""
+### Type-1 Half-Turn Reflection
+"""
 
-data.forEach((polygon) => {
-	s.append("path")
-		.attr("d", line(polygon))
-		.attr("stroke", "black")
-		.attr("fill", "white")
-})
-
-const output = svg
-output.s = s
-return output
-
-</script>
-
-""")
+# ╔═╡ 641980e2-3399-41b2-b951-f2dcf462d8f9
+md"""
+### Type-2 Half-Turn Reflection
+"""
 
 # ╔═╡ 3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 md"## Notebook related"
@@ -1101,7 +1574,7 @@ md"""
 # Appendix B: Authors
 
 - **Edem Lawson**: polyomino builder
-- **Boris Petrov**: site setup, BN factorization, tilings drawing
+- **Boris Petrov**: website setup, factorizations, tilings drawing
 
 """
 
@@ -1135,7 +1608,7 @@ PlutoUI = "~0.7.52"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.3"
+julia_version = "1.9.4"
 manifest_format = "2.0"
 project_hash = "1d21cefe31ea90f587d2d2e16ab29c4b55dd4464"
 
@@ -1215,12 +1688,12 @@ version = "0.21.4"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.3"
+version = "0.6.4"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.84.0+0"
+version = "8.4.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -1229,7 +1702,7 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.10.2+0"
+version = "1.11.0+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -1391,7 +1864,7 @@ version = "5.8.0+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.48.0+0"
+version = "1.52.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1404,22 +1877,31 @@ version = "17.4.0+0"
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─870e528d-678e-497e-893d-72d3b7b0eab0
 # ╟─13b287d8-6340-4570-9f7c-ed9eab4bdd2c
+# ╟─306500a9-e4de-4ae8-a05b-57e768202170
+# ╟─f0942786-6415-4d2b-a41a-aa06d250f798
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
+# ╟─3a52dfb0-ae3f-48a7-87ff-c456db61fe15
+# ╟─6802038f-0d12-455e-9df6-875a11c0f7d3
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
-# ╟─d1ae79ec-4058-4858-915e-54a7a9094d85
-# ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
-# ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
-# ╟─2bb6b38f-c1be-431e-a383-aa3604148c54
-# ╟─2c07967f-fd4e-4335-af4e-0fbc0313c134
+# ╟─1544010c-9a45-4ea3-ab0a-6ffe24648ec8
+# ╟─7b9d22c3-c2de-40d8-b268-194adee6b58c
 # ╟─d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
-# ╟─ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
-# ╟─a058e454-1da6-4882-b1b7-f48e9555378f
-# ╟─acc326a5-a4a2-44e7-8ca8-90214d0247bf
-# ╟─83673640-43fd-4fdb-9757-b603f946d8a2
+# ╟─2bb6b38f-c1be-431e-a383-aa3604148c54
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
+# ╟─27aa8b5d-bb9c-493f-b256-8503c8d4177d
+# ╟─462623f2-1968-4fe5-89af-c9fbcdd5b49a
+# ╟─81196bee-bee2-4788-bf5f-3f60f7e668df
+# ╟─3878e012-c80d-4b93-af22-901187b933d8
+# ╟─600d4c07-f5c2-418c-acbb-d6142155e74e
+# ╠═2139c37b-422d-4524-9bf8-e59dbfa105fc
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
+# ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
+# ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+# ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
+# ╟─8665a82d-69ac-4a6b-aac5-20b333e5026d
+# ╟─5bd78da2-2445-4846-9b03-640f27917895
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
 # ╟─ee001f50-0809-4272-86fb-727fd0fdb654
 # ╟─a0c1f409-c98a-40fb-aee9-93ce587c508e
@@ -1427,10 +1909,16 @@ version = "17.4.0+0"
 # ╟─53eb421e-3f88-4789-b077-9e283d76a3c7
 # ╟─7357539a-0888-4cf9-87d4-f03cf9063dd5
 # ╟─2543a64f-f45a-4881-bcde-98aa94b30a58
+# ╟─a697e811-0507-4be4-b6fb-43fde5c7f9f5
+# ╟─0c81f834-1194-4460-bfd7-45da0e051d2d
+# ╟─37f103c4-65e4-4064-b651-eb5e3db06b60
+# ╟─7a29d558-f01c-4aba-b8c3-85d84ff88776
 # ╟─1d99edae-0c8f-465a-bc22-198433d38e95
 # ╟─06a216bd-e3c0-4561-a0bc-31d86aebd783
 # ╟─603531e5-59d0-4be9-b6e9-37929f5afd06
 # ╟─2868538a-ee1f-43ac-af62-6603ffff459d
+# ╟─d75dc891-3b79-4be8-9564-6eef1bdba3da
+# ╟─31124ccb-2e65-4281-85b8-c355ec6a9b4d
 # ╟─ee24888e-2f89-4400-bd83-8caa73884c64
 # ╟─15b49802-11c5-420d-8227-01555b99de2d
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
@@ -1442,14 +1930,18 @@ version = "17.4.0+0"
 # ╟─9fd065ab-df8e-4058-b84a-d8824cfd60cc
 # ╟─ad8103a2-e5c9-4d9e-bd41-2e1e6b3e6d40
 # ╟─5592d3ff-30a3-4be7-9ce6-3894ef76c79d
+# ╟─55990d0e-1418-4bd6-a1c1-f75cb74cb958
 # ╟─556054b0-23e5-4bef-8356-ffdbb99cdcd2
 # ╟─fe33290c-b27c-48bd-8aee-b6f3cd6a5184
 # ╟─24c55137-7470-4b2a-9948-9e4ec23aa11c
 # ╟─642e20fa-5582-418b-ae66-7ec493209736
 # ╟─291e04ef-a5dd-4cd2-a598-f2256e6643e0
+# ╟─e053352a-9582-416b-a110-80ae726c0552
 # ╟─3e4a972f-6b44-41a6-91d2-3f949b9b7004
 # ╠═70fba921-5e52-4b04-84e0-397087f0005c
 # ╟─9dac7d76-e344-4cce-bedd-ae6cb4bec111
+# ╠═a71c4616-be41-4460-a23f-543f46851517
+# ╠═ffd79659-26d5-4447-82cf-6e2a5f506dc6
 # ╟─cd430387-c391-4360-921b-3ca958a70d47
 # ╟─cd7d4c8f-b910-4b9f-95a5-0054c0e01ee7
 # ╟─5c94888b-2196-4124-b731-8d74b19c3f76
@@ -1463,9 +1955,9 @@ version = "17.4.0+0"
 # ╟─1d86b240-d7d7-4988-960e-0a56030efca7
 # ╟─f452ddf6-c03e-4aaa-9a52-32c98ae396b8
 # ╟─8a3d3c83-c88f-48d7-b54a-5d3c92d3b54c
-# ╟─17c4fc0e-9be1-41ab-8958-ff66627ccd06
-# ╟─aff885f3-1157-47d6-80b7-11c8b6344ec6
-# ╟─4bb7ad14-8698-4bd9-bc27-acbcb3aa6d5f
+# ╟─e9d48d9d-c1fa-410f-8431-1fe4794ae3e4
+# ╟─368eab32-e52d-4cc8-9396-56602822e3ca
+# ╟─29cb373a-95ba-4938-87e8-401123dc517a
 # ╟─ed19093c-0f09-4a19-9cfd-98e24005b7c8
 # ╟─0806d4f5-89ed-46a1-8c65-f1e797dc6977
 # ╟─abceaed4-8a67-416a-a8aa-f0c77f9c3b2a
@@ -1475,11 +1967,35 @@ version = "17.4.0+0"
 # ╟─8d84c5dd-8c7d-456c-88fb-91d5a787846a
 # ╟─830056cc-efb4-4305-9a69-4f19138eb6db
 # ╟─99d849e7-f9cc-4ab8-af5a-dce0bc1f8543
-# ╠═b77fe1fc-86f1-4226-8316-75862f5a2c76
-# ╠═a2c420e4-759f-48da-bc59-ffa568e1b23f
-# ╠═388568b4-2319-4ef6-98f1-306223d2dc41
+# ╟─b77fe1fc-86f1-4226-8316-75862f5a2c76
+# ╟─a2c420e4-759f-48da-bc59-ffa568e1b23f
+# ╟─388568b4-2319-4ef6-98f1-306223d2dc41
 # ╟─7736febe-6492-4a3e-8bd4-3fcf590fe6fc
 # ╟─f5ee1318-b1a2-4cdc-a459-29d98b8d804e
+# ╟─eb67c8bf-b5ac-4508-bdd8-88c0d01101f3
+# ╟─a278b48b-a695-4ebe-a48b-5ce251fab378
+# ╟─b02c5236-bc24-40ab-b452-3b3e61853016
+# ╟─4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
+# ╟─8c8cab8e-2922-4f39-8614-c9b45266ff9f
+# ╟─2cea2c5c-3942-473c-a231-0d4450346bf6
+# ╟─1e6d83b3-de76-41c4-92f9-000e25670dbb
+# ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
+# ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
+# ╟─a4092512-3cf2-4e1f-9ef3-188a7151b0a4
+# ╟─3477d9cc-23a0-4feb-8518-c973b3b3834f
+# ╟─aad243e7-aa8c-4a72-951a-8e98f81101a3
+# ╟─36fe3ab8-832a-4b66-bde2-67ab323c5cef
+# ╟─b8662be9-ece0-4c22-b165-ac5f764dc876
+# ╟─a25d4c5e-542f-4709-8f1f-b8adba8391c0
+# ╟─255ee00f-eafb-458f-959f-97bc99023ea6
+# ╟─2058d788-5faa-460a-ba8f-ef40699b78e0
+# ╟─0583a651-61e8-4193-8bf6-b03cd8de0179
+# ╟─93359dda-78df-4f44-b15e-bc202c77b47d
+# ╟─4eb10ee7-e5b9-4306-a8e1-9d7dfd5dc268
+# ╟─ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
+# ╟─9d3a0e5c-ea42-4924-bc0f-1fcb478626d7
+# ╟─4ce6ca14-fa12-4440-a7da-19adda76ed96
+# ╟─641980e2-3399-41b2-b951-f2dcf462d8f9
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
