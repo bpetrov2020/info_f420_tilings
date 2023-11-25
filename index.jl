@@ -530,7 +530,10 @@ The following example shows a surrounding that leaves no gaps, yet doesn’t pro
 """
 
 # ╔═╡ 81196bee-bee2-4788-bf5f-3f60f7e668df
-PlutoUI.LocalResource("./res/surround_bad.svg", :height => 250, :width=>"100%")
+PlutoUI.LocalResource("./res/surround_bad.svg", :height => 200, :width=>"100%")
+
+# ╔═╡ 9e4e8ab1-dd18-4bc2-baac-9daece06905a
+
 
 # ╔═╡ 3878e012-c80d-4b93-af22-901187b933d8
 md"""
@@ -554,6 +557,17 @@ md"# Appendix A: code"
 md"""
 ## Current factorization state
 """
+
+# ╔═╡ 77a355a2-7591-4d18-955b-bbf6c7e19dda
+boundary_word = try
+	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
+		""
+	else
+		boundaryWord
+	end
+catch e
+	""
+end
 
 # ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
 begin
@@ -1473,18 +1487,16 @@ end
 
 # ╔═╡ 9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 begin
-	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
-		boundary_word = ""
+	if isempty(boundary_word)
 		factorization = nothing
 		transforms = nothing
 		tiling = []
 	else
-		boundary_word = boundaryWord
-		factorization = anyfactorization(boundaryWord)
+		factorization = anyfactorization(boundary_word)
 		
 		if factorization |> !isnothing
 			transforms = transformations(boundary_word, factorization)
-			tile_polygons = generate_tiling(boundary_word, 10, transforms)
+			tile_polygons = generate_tiling(boundary_word, 15, transforms)
 			tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
 		else
 			transforms = nothing
@@ -1892,13 +1904,15 @@ version = "17.4.0+0"
 # ╟─27aa8b5d-bb9c-493f-b256-8503c8d4177d
 # ╟─462623f2-1968-4fe5-89af-c9fbcdd5b49a
 # ╟─81196bee-bee2-4788-bf5f-3f60f7e668df
+# ╠═9e4e8ab1-dd18-4bc2-baac-9daece06905a
 # ╟─3878e012-c80d-4b93-af22-901187b933d8
 # ╟─600d4c07-f5c2-418c-acbb-d6142155e74e
 # ╠═2139c37b-422d-4524-9bf8-e59dbfa105fc
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
-# ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+# ╟─77a355a2-7591-4d18-955b-bbf6c7e19dda
+# ╟─9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
 # ╟─8665a82d-69ac-4a6b-aac5-20b333e5026d
 # ╟─5bd78da2-2445-4846-9b03-640f27917895
