@@ -46,9 +46,17 @@ A _polyomino_ is a polygon formed of glued-together unit-length squares with no 
 # ╔═╡ 13b287d8-6340-4570-9f7c-ed9eab4bdd2c
 md"""
 Here’s an example showing two tesselations of the plane with polyominos. Both use only one shape, but only the second one is isohedral. In the first, only shapes of the same color may be mapped to one another.
+"""
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Conway_criterion_false_negative_nonominoes.svg/1024px-Conway_criterion_false_negative_nonominoes.svg.png)
+# ╔═╡ 306500a9-e4de-4ae8-a05b-57e768202170
+PlutoUI.Resource(
+	"https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Conway_criterion_false_negative_nonominoes.svg/1024px-Conway_criterion_false_negative_nonominoes.svg.png",
+	:height => 350,
+	:style => "margin: 0px auto 0px; display:block;"
+)
 
+# ╔═╡ f0942786-6415-4d2b-a41a-aa06d250f798
+md"""
 _Credits: Wikipedia_
 """
 
@@ -59,7 +67,14 @@ md"## Interactive showcase"
 md"""
 Before delving into the theoretical explanations of how we determine whether a polyomino can tile the plane, we propose first an interactive activity. The grid right below is a _polyomino builder_ and allows you to create your very own polyomino. You can click on the squares to add them to your polyomino and, once finished, hit the ‘Done’ button and see whether your polyomino can tile the plane!
 
+This can be thought as a game in which you must guess whether the polyomino can tile the plane, before verifying your intuition. Have fun and try to find the most esoteric polyominos tiling the plane!
+
 > The notebook must be run in order to use the interactive elements.
+"""
+
+# ╔═╡ 6802038f-0d12-455e-9df6-875a11c0f7d3
+md"""
+### Polyomino builder
 """
 
 # ╔═╡ 6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
@@ -81,7 +96,7 @@ Before delving into the theoretical explanations of how we determine whether a p
 	}
 	
 	.button.clicked {
-		border: 3px solid red;
+		border: 3px solid #FF7562;
 	}
 	.button.top {
 		border-top: 1px dotted #8c8c8c;
@@ -97,7 +112,7 @@ Before delving into the theoretical explanations of how we determine whether a p
 	}
 
 	.button.fill-red {
-		background-color: red;
+		background-color: #FF7562;
 	}
 
 	.button.fill-white {
@@ -178,7 +193,7 @@ Before delving into the theoretical explanations of how we determine whether a p
 <span>
 <style>
 	.button-line {
-		width: 100%;
+		width: 505px;
 		display: flex;
 		justify-content: space-between;
 	}
@@ -194,15 +209,15 @@ Before delving into the theoretical explanations of how we determine whether a p
 	}
 	
 	.cmd-button:nth-child(1) {
-		background-color: #00e600; 
+		background-color: #83BF8A; 
 	}
 	
 	.cmd-button:nth-child(2) {
-		background-color: #668cff; 
+		background-color: #5C8CCD; 
 	}
 	
 	.cmd-button:nth-child(3) {
-		background-color: #ff1a1a;
+		background-color: #FF7562;
 	}
 	
 	.cmd-button:hover {
@@ -487,37 +502,15 @@ Before delving into the theoretical explanations of how we determine whether a p
 </span>
 """)
 
-# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
-begin
-	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
-	
-	md"""
-	The boundary of the polyomino $P$ is:
-	
-	$(bw)
-	"""
-end
+# ╔═╡ 1544010c-9a45-4ea3-ab0a-6ffe24648ec8
+md"""
+### Plane Tiling
+"""
 
 # ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
 md"""
-Zoom $(@bind UNIT Slider(5:30))
+**Pan** (x = $(@bind xpan Scrubbable(0:10:600)), y = $(@bind ypan Scrubbable(0:10:300))) & **Zoom** $(@bind UNIT Slider(5:30))
 """
-
-# ╔═╡ 2c07967f-fd4e-4335-af4e-0fbc0313c134
-md"""
-Pan by x = $(@bind xpan Scrubbable(0:10:600)) and y = $(@bind ypan Scrubbable(0:10:300))
-"""
-
-# ╔═╡ ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
-boundary_word = boundaryWord == nothing ? "druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur" : boundaryWord
-
-# ╔═╡ e053352a-9582-416b-a110-80ae726c0552
-function getfirst(p, itr)
-    for el in itr
-        p(el) && return el
-    end
-    return nothing
-end
 
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
@@ -556,6 +549,22 @@ The main idea be
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
+
+# ╔═╡ 58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
+md"""
+## Current factorization state
+"""
+
+# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
+begin
+	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
+	
+	md"""
+	The boundary of the polyomino $P$ is:
+	
+	$(bw)
+	"""
+end
 
 # ╔═╡ 18389ab9-4fc4-49f4-9bc9-b855b7c16232
 md"""
@@ -726,6 +735,14 @@ complement(word::String) = String(map(complement, word))
 
 # ╔═╡ 291e04ef-a5dd-4cd2-a598-f2256e6643e0
 twice(word::String) = repeat(word, 2)
+
+# ╔═╡ e053352a-9582-416b-a110-80ae726c0552
+function getfirst(p, itr)
+    for el in itr
+        p(el) && return el
+    end
+    return nothing
+end
 
 # ╔═╡ 3e4a972f-6b44-41a6-91d2-3f949b9b7004
 md"""
@@ -1395,7 +1412,7 @@ function type_two_reflection(w::String)
 end
 
 # ╔═╡ 8665a82d-69ac-4a6b-aac5-20b333e5026d
-function factorizationn(w::String)
+function anyfactorization(w::String)
 	getfirst(
 		(!isnothing),
 		map(
@@ -1408,26 +1425,6 @@ function factorizationn(w::String)
 			]
 		)
 	)
-end
-
-# ╔═╡ cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
-const factorization = try
-	factorizationn("druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur")
-	#factorizationn(boundaryWord)
-	#something(bn_factorization(boundaryWord))
-catch e
-	nothing
-end
-
-# ╔═╡ 3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
-try
-	if factorization != nothing
-		md"There exists a factorization of this word!"
-	else
-		md"There doesn’t exist a factorization of this word…"
-	end
-catch e
-	md"Enter a valid polyomino to evaluate it for a factorization."
 end
 
 # ╔═╡ ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
@@ -1474,54 +1471,87 @@ function transformations(bw::String, fact::BWFactorization)
 	end
 end
 
-# ╔═╡ a058e454-1da6-4882-b1b7-f48e9555378f
-transforms = transformations(boundary_word, factorization)
+# ╔═╡ 9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+begin
+	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
+		boundary_word = ""
+		factorization = nothing
+		transforms = nothing
+		tiling = []
+	else
+		boundary_word = boundaryWord
+		factorization = anyfactorization(boundaryWord)
+		
+		if factorization |> !isnothing
+			transforms = transformations(boundary_word, factorization)
+			tile_polygons = generate_tiling(boundary_word, 10, transforms)
+			tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
+		else
+			transforms = nothing
+			tiling = []
+		end
+	end
+	nothing
+end
 
-# ╔═╡ acc326a5-a4a2-44e7-8ca8-90214d0247bf
-tile_polygons = generate_tiling(boundary_word, 10, transforms)
-
-# ╔═╡ 83673640-43fd-4fdb-9757-b603f946d8a2
-tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
+# ╔═╡ 7b9d22c3-c2de-40d8-b268-194adee6b58c
+if ismissing(boundary_word) || isnothing(boundary_word) || isempty(boundary_word)
+	Markdown.MD(Markdown.Admonition(
+		"info",
+		"No polyomino to work with",
+		[md"Enter a valid polyomino to see whether it can tile the plane!"]
+	))
+elseif isnothing(factorization)
+	Markdown.MD(Markdown.Admonition(
+		"warning",
+		"Tiling doesn’t exist",
+		[md"There exists no isohedral tiling with this polyomino. Try another one!"]
+	))
+else
+	Markdown.MD(Markdown.Admonition(
+		"success",
+		"Tiling exists",
+		[md"An isohedral tiling with this polyomino exists, congratulations! Try another one!"]
+	))
+end
 
 # ╔═╡ d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
-@htl("""
-<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
 
-<script id="drawing">
+	@htl("""
+	<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
+	
+	<script id="drawing">
+	
+	
+	// const svg = this == null ? DOM.svg(600,300) : this
+	// const s = this == null ? d3.select(svg) : this.s
+	
+	const svg = DOM.svg("100%", 300)
+	const s = d3.select(svg)
+	
+	s.append("rect")
+	    .attr("width", "100%")
+	    .attr("height", "100%")
+	    .attr("fill", "white");
+	
+	const line = d3.line()
+	let data = $tiling
+	
+	data.forEach((polygon) => {
+		s.append("path")
+			.attr("d", line(polygon))
+			.attr("stroke", "black")
+			.attr("fill", "white")
+	})
+	
+	const output = svg
+	output.s = s
+	return output
+	
+	</script>
+	
+	""")
 
-function handleZoom(e) {
-  d3.select('svg g')
-    .attr('transform', e.transform);
-}
-
-let zoom = d3.zoom()
-  .on('zoom', handleZoom);
-
-
-// const svg = this == null ? DOM.svg(600,300) : this
-// const s = this == null ? d3.select(svg) : this.s
-const svg = DOM.svg("100%", 300)
-const s = d3.select(svg)
-
-//s.call(zoom);
-
-const line = d3.line()
-let data = $tiling
-
-data.forEach((polygon) => {
-	s.append("path")
-		.attr("d", line(polygon))
-		.attr("stroke", "black")
-		.attr("fill", "white")
-})
-
-const output = svg
-output.s = s
-return output
-
-</script>
-
-""")
 
 # ╔═╡ 4ce6ca14-fa12-4440-a7da-19adda76ed96
 md"""
@@ -1847,22 +1877,17 @@ version = "17.4.0+0"
 # ╟─5da0ce50-d477-4f7d-8ec1-010d8f5fc902
 # ╟─870e528d-678e-497e-893d-72d3b7b0eab0
 # ╟─13b287d8-6340-4570-9f7c-ed9eab4bdd2c
+# ╟─306500a9-e4de-4ae8-a05b-57e768202170
+# ╟─f0942786-6415-4d2b-a41a-aa06d250f798
 # ╟─45d3575a-c887-435c-84be-a26284ee5dcb
 # ╟─3a52dfb0-ae3f-48a7-87ff-c456db61fe15
+# ╟─6802038f-0d12-455e-9df6-875a11c0f7d3
 # ╟─6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
 # ╟─8b41e978-f9cf-4515-9141-cbf8130521d9
-# ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
-# ╟─3cf3931b-5c2e-4efa-a5ef-2a485eac2c0c
-# ╟─cc4b08a6-f419-4af4-8c5b-dd779ea2ed7a
+# ╟─1544010c-9a45-4ea3-ab0a-6ffe24648ec8
+# ╟─7b9d22c3-c2de-40d8-b268-194adee6b58c
 # ╟─d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
 # ╟─2bb6b38f-c1be-431e-a383-aa3604148c54
-# ╟─2c07967f-fd4e-4335-af4e-0fbc0313c134
-# ╠═ea3b3a3c-3fbd-4f0a-8410-c012ebb32bed
-# ╟─8665a82d-69ac-4a6b-aac5-20b333e5026d
-# ╟─5bd78da2-2445-4846-9b03-640f27917895
-# ╟─a058e454-1da6-4882-b1b7-f48e9555378f
-# ╟─acc326a5-a4a2-44e7-8ca8-90214d0247bf
-# ╟─83673640-43fd-4fdb-9757-b603f946d8a2
 # ╟─c1587642-84ed-459f-855d-fdd07ac3f761
 # ╟─27aa8b5d-bb9c-493f-b256-8503c8d4177d
 # ╟─462623f2-1968-4fe5-89af-c9fbcdd5b49a
@@ -1872,6 +1897,11 @@ version = "17.4.0+0"
 # ╠═2139c37b-422d-4524-9bf8-e59dbfa105fc
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
+# ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
+# ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+# ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
+# ╟─8665a82d-69ac-4a6b-aac5-20b333e5026d
+# ╟─5bd78da2-2445-4846-9b03-640f27917895
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
 # ╟─ee001f50-0809-4272-86fb-727fd0fdb654
 # ╟─a0c1f409-c98a-40fb-aee9-93ce587c508e
