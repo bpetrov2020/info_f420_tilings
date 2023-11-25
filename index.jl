@@ -74,7 +74,7 @@ This can be thought as a game in which you must guess whether the polyomino can 
 
 # ╔═╡ 6802038f-0d12-455e-9df6-875a11c0f7d3
 md"""
-### Polyomino builder
+### Polyomino Builder
 """
 
 # ╔═╡ 6d4c526e-4d62-4d4c-88ca-728ea6b4fbf6
@@ -533,11 +533,31 @@ The following example shows a surrounding that leaves no gaps, yet doesn’t pro
 PlutoUI.LocalResource("./res/surround_bad.svg", :height => 200, :width=>"100%")
 
 # ╔═╡ 9e4e8ab1-dd18-4bc2-baac-9daece06905a
-
+md"""
+Fortunately, a set of configurations that produce isohedral tilings were established by previous papers TODO. They treat of general polygons, but since polyominoes are special cases, most are applicable here. Tough with our constrained problem, not all are possible. Eventually, we end up with 7 characterizations of the neighborhood that determine whether an isohedral tiling exist. These configurations are called _boundary criteria_. The term will become clear in the next section.
+"""
 
 # ╔═╡ 3878e012-c80d-4b93-af22-901187b933d8
 md"""
 ### Polyominos as words
+"""
+
+# ╔═╡ aefb27b5-4d65-436d-8f5b-093473e7e3fb
+md"""
+One way to see the boundary of one polyomino is as one sees a polygon, that is as a set of points connected and separating a region of the plane. However, this is not very convenient to study them. Another way is that of the _boundary word_. Since all edges are either vertical or horizontal, and the lengths of the edges are integers (say one unit square is of size 1), we can picture the polyominoes as a sequence of instructions to build them.
+
+The alphabet would be $Σ = \{r, u, l, d\}$ for the four directions (right, up, left, down). We then choose an arbitrary extremity $e$, and enurate the moves to walk along the boundary and get back to $e$. Here’s an example to better understand how it works:
+"""
+
+# ╔═╡ 8c471070-7629-4957-821f-61b50d52e936
+PlutoUI.LocalResource("./res/boundary_word.svg", :height => 200, :width=>"100%")
+
+# ╔═╡ 917a93f6-153f-4eac-a740-04ee407a21a6
+md"""
+The boundary word of the polyomino $P$ right above is $𝑩(P) = rrrdlllu$, starting from the upper left corner. However, we could’ve started from any other point and, for example, $rdlllurr$ is just as valid a word boundary for this polyomino.
+
+The fact that we now work with words instead of polyominoes mean that we can use the many results, algorithms and data structures stemming from bioinformatics and general word processing to study our shapes. This is main idea of the paper at hand, to use strong structural results to find whether we can from the word boundary build one the 7 factorizations that induce isohedral tilings. A _factorization_ is a splitting of the boundary word into subwords that hopefully have some desired properties.
+
 """
 
 # ╔═╡ 600d4c07-f5c2-418c-acbb-d6142155e74e
@@ -547,7 +567,12 @@ md"""
 
 # ╔═╡ 2139c37b-422d-4524-9bf8-e59dbfa105fc
 md"""
-The main idea be
+
+With this in mind, here are those factorizations:
+
+- Translation: $ABC\hat{A}\hat{B}\hat{C}$
+- Half-Turn: $ABC\hat{A}DE$ with B, C, D, E palindromes
+- Quarter-Turn = 
 """
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
@@ -559,6 +584,7 @@ md"""
 """
 
 # ╔═╡ 77a355a2-7591-4d18-955b-bbf6c7e19dda
+# No pretty, but otherwise the export is kinda fucked up
 boundary_word = try
 	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
 		""
@@ -1425,22 +1451,6 @@ function type_two_reflection(w::String)
 	nothing
 end
 
-# ╔═╡ 8665a82d-69ac-4a6b-aac5-20b333e5026d
-function anyfactorization(w::String)
-	getfirst(
-		(!isnothing),
-		map(
-			f -> f(w),
-			[
-				bn_factorization,
-				half_turn,
-				type_one_reflection,
-				type_two_reflection
-			]
-		)
-	)
-end
-
 # ╔═╡ ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
 @test !(type_two_reflection("druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur") |> isnothing)
 
@@ -1472,6 +1482,102 @@ function type_two_reflection_transformations(word::String, fact::Factorization)
 	]
 end
 
+# ╔═╡ 4ce6ca14-fa12-4440-a7da-19adda76ed96
+md"""
+### Type-1 Half-Turn Reflection
+"""
+
+# ╔═╡ d2931638-3c5f-4c8a-beff-bf12bd7f60bf
+function type_one_half_turn_reflection(w::String)
+	l = length(w)
+	s(i) = mod1(i, l)
+	
+	for A_start ∈ 1:l
+
+		B_max = A_start + (l-4) ÷ 2
+		for B_start ∈ A_start+1:B_max
+			A = factor(w, A_start, s(B_start-1))
+
+			C_max = B_start + 1 + l - 2 - length(A)
+			for C_start ∈ B_start+1:C_max
+				B = factor(w, s(B_start), s(C_start-1))
+				if B.content |> ispalindrome
+
+					Â_max = C_start + 1 + l - 2 - length(A) + 1
+					for Â_start ∈ C_start+1:Â_max
+						D_start = Â_start + (A |> length)
+						DF_start = D_start + (A_start + l - D_start) ÷ 2
+						
+						C = factor(w, s(C_start), s(Â_start-1))
+						Â = factor(w, s(Â_start), s(D_start-1))
+
+						D = factor(w, s(D_start), s(DF_start-1))
+						DF = factor(w, s(DF_start), s(A_start+l-1))
+
+						if (C.content |> ispalindrome
+							&& A.content == Â.content |> backtrack
+							&& isanyreflection(D, DF))
+							return BWFactorization(
+								[A, B, C, Â, D, DF],
+								TypeOneHalfTurnReflection
+							)
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ 8665a82d-69ac-4a6b-aac5-20b333e5026d
+function anyfactorization(w::String)
+	getfirst(
+		(!isnothing),
+		map(
+			f -> f(w),
+			[
+				bn_factorization,
+				half_turn,
+				type_one_reflection,
+				type_two_reflection,
+				type_one_half_turn_reflection
+			]
+		)
+	)
+end
+
+# ╔═╡ 112ad530-59ce-44d7-ae85-adc0b44286b1
+@test !(type_one_half_turn_reflection("rurrdrrdlddlddldrrrrdldllulldlullurrululurrullurur") |> isnothing)
+
+# ╔═╡ 15162be0-722a-44f1-83a3-0894eb65afda
+function type_one_half_turn_reflection_transformations(word::String, fact::Factorization)
+	start = fact[1].start
+	finish = fact[4].finish
+	t1 = path_vector(extract(word, start, finish))
+
+	θ = reflection_angle(fact[5], fact[6])
+
+	# Invert for 45 because the plane’s y axis is point downwards
+	θ = θ ∈ [45, -45] ? -θ : θ
+	
+	[
+		(pts -> translate(pts, t1)),
+		(pts -> translate(pts, .-t1)),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[2].start)
+			te = pts[fact[3].start] .- pts[fact[2].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			m = mirror(pts, θ; first_idx = fact[1].start)
+			tc = pts[fact[6].start] .- pts[fact[1].start]
+			translate(m, tc)
+		end),		
+	]
+end
+
 # ╔═╡ 5bd78da2-2445-4846-9b03-640f27917895
 function transformations(bw::String, fact::BWFactorization)
 	if fact.kind == Translation
@@ -1482,6 +1588,8 @@ function transformations(bw::String, fact::BWFactorization)
 		type_one_reflection_transformations(bw, fact.fact)
 	elseif fact.kind == TypeTwoReflection
 		type_two_reflection_transformations(bw, fact.fact)
+	elseif fact.kind === TypeOneHalfTurnReflection
+		type_one_half_turn_reflection_transformations(bw, fact.fact)
 	end
 end
 
@@ -1565,11 +1673,6 @@ end
 	""")
 
 
-# ╔═╡ 4ce6ca14-fa12-4440-a7da-19adda76ed96
-md"""
-### Type-1 Half-Turn Reflection
-"""
-
 # ╔═╡ 641980e2-3399-41b2-b951-f2dcf462d8f9
 md"""
 ### Type-2 Half-Turn Reflection
@@ -1600,6 +1703,8 @@ md"""
 - [1] S. Langerman and A. Winslow, “A Quasilinear-Time Algorithm for Tiling the Plane Isohedrally with a Polyomino.” arXiv, Mar. 09, 2016. doi: 10.48550/arXiv.1507.02762.
 - [2] A. Winslow, “An Optimal Algorithm for Tiling the Plane with a Translated Polyomino.” arXiv, Sep. 22, 2015. doi: 10.48550/arXiv.1504.07883.
 - [3] S. Brlek, X. Provençal, and J.-M. Fédou, “On the tiling by translation problem,” Discrete Applied Mathematics, vol. 157, no. 3, pp. 464–475, Feb. 2009, doi: 10.1016/j.dam.2008.05.026.
+- [4] H. Heesch and O. Kienzle, Flächenschluß, vol. 6. in Wissenschaftliche Normung, vol. 6. Berlin, Heidelberg: Springer, 1963. doi: 10.1007/978-3-642-94883-1.
+
 
 """
 
@@ -1904,17 +2009,20 @@ version = "17.4.0+0"
 # ╟─27aa8b5d-bb9c-493f-b256-8503c8d4177d
 # ╟─462623f2-1968-4fe5-89af-c9fbcdd5b49a
 # ╟─81196bee-bee2-4788-bf5f-3f60f7e668df
-# ╠═9e4e8ab1-dd18-4bc2-baac-9daece06905a
+# ╟─9e4e8ab1-dd18-4bc2-baac-9daece06905a
 # ╟─3878e012-c80d-4b93-af22-901187b933d8
+# ╟─aefb27b5-4d65-436d-8f5b-093473e7e3fb
+# ╟─8c471070-7629-4957-821f-61b50d52e936
+# ╟─917a93f6-153f-4eac-a740-04ee407a21a6
 # ╟─600d4c07-f5c2-418c-acbb-d6142155e74e
-# ╠═2139c37b-422d-4524-9bf8-e59dbfa105fc
+# ╟─2139c37b-422d-4524-9bf8-e59dbfa105fc
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
-# ╟─77a355a2-7591-4d18-955b-bbf6c7e19dda
-# ╟─9bafd58c-14db-496b-a25c-c4ee3cf2a66f
+# ╠═77a355a2-7591-4d18-955b-bbf6c7e19dda
+# ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
-# ╟─8665a82d-69ac-4a6b-aac5-20b333e5026d
+# ╠═8665a82d-69ac-4a6b-aac5-20b333e5026d
 # ╟─5bd78da2-2445-4846-9b03-640f27917895
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
 # ╟─ee001f50-0809-4272-86fb-727fd0fdb654
@@ -2009,6 +2117,9 @@ version = "17.4.0+0"
 # ╟─ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
 # ╟─9d3a0e5c-ea42-4924-bc0f-1fcb478626d7
 # ╟─4ce6ca14-fa12-4440-a7da-19adda76ed96
+# ╟─d2931638-3c5f-4c8a-beff-bf12bd7f60bf
+# ╟─112ad530-59ce-44d7-ae85-adc0b44286b1
+# ╟─15162be0-722a-44f1-83a3-0894eb65afda
 # ╟─641980e2-3399-41b2-b951-f2dcf462d8f9
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
