@@ -1306,28 +1306,24 @@ function half_turn_transformations(word::String, fact::Factorization)
 		(pts -> translate(pts, t1)),
 		(pts -> translate(pts, .-t1)),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			te = pts[fact[6].start] .- pts[fact[1].start]
+			r = rotate(pts, 180; first_idx = fact[2].start)
+			te = pts[fact[3].start] .- pts[fact[2].start]
 			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			te = pts[fact[6].start] .- pts[fact[1].start]
-			td = pts[fact[5].start] .- pts[fact[1].start]
-			translate(r, td .+ te)
+			r = rotate(pts, 180; first_idx = fact[3].start)
+			te = pts[fact[4].start] .- pts[fact[3].start]
+			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			a = pts[fact[2].start] .- pts[fact[1].start]
-			t = pts[fact[3].start] .- pts[fact[2].start]
-			translate(r,  2 .* a .+ t)
+			r = rotate(pts, 180; first_idx = fact[5].start)
+			te = pts[fact[6].start] .- pts[fact[5].start]
+			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			a = pts[fact[2].start] .- pts[fact[1].start]
-			tb = pts[fact[3].start] .- pts[fact[2].start]
-			tc = pts[fact[4].start] .- pts[fact[2].start]
-			translate(r,  2 .* a .+ tb .+ tc)
+			r = rotate(pts, 180; first_idx = fact[6].start)
+			te = pts[fact[1].start] .- pts[fact[6].start]
+			translate(r, te)
 		end),
 	]
 end
@@ -2295,7 +2291,7 @@ version = "17.4.0+0"
 # ╟─4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
 # ╟─8c8cab8e-2922-4f39-8614-c9b45266ff9f
 # ╟─2cea2c5c-3942-473c-a231-0d4450346bf6
-# ╟─1e6d83b3-de76-41c4-92f9-000e25670dbb
+# ╠═1e6d83b3-de76-41c4-92f9-000e25670dbb
 # ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 # ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
 # ╟─a4092512-3cf2-4e1f-9ef3-188a7151b0a4
