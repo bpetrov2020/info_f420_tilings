@@ -587,9 +587,18 @@ md"""
 # ╔═╡ 551b3fdd-cc9f-47c2-ab76-f523ecb4db08
 @bind ad_boundaryword TextField(60;default="rdrdrdllddrurddddlllddldluurulluulluurdruurdruulurru")
 
+# ╔═╡ 2f74f271-3f59-4edc-bc7a-0a950cb24bd7
+PLANE_WIN_X = 700
+
+# ╔═╡ 2e92baef-efe4-4355-93a8-1c3797e17ece
+PLANE_WIN_Y = 300
+
+# ╔═╡ c699b23f-2341-4a07-9d72-ff85585110f4
+MIN_SQ_UNIT = 5
+
 # ╔═╡ c32cff12-157e-42d7-a827-9a5760d44d8c
 md"""
-**Pan** (x = $(@bind ad_xpan Scrubbable(0:10:600)), y = $(@bind ad_ypan Scrubbable(0:10:300))) & **Zoom** $(@bind ad_UNIT Slider(5:30))
+**Zoom** $(@bind ad_UNIT Slider(MIN_SQ_UNIT:30))
 """
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
@@ -777,6 +786,46 @@ function generate_tiling(word::String, size::Integer, transforms)::Vector{Polygo
 	polygons
 end
 
+# ╔═╡ c15fbe9e-1bd8-43fa-89f2-a5fabde0e652
+function generate_tiling(word::String, bounds::Tuple{Int64, Int64}, transforms)
+	max_x = bounds[1] ÷ 2
+	min_x = -max_x
+
+	max_y = bounds[2] ÷ 2
+	min_y = -max_y
+
+	isinbounds(poly) = any(pt -> min_x ≤ pt[1] ≤ max_x && min_y ≤ pt[2] ≤ max_y, poly)
+	
+	polygons = []
+	pending = [path_points(word)]
+
+	while !isempty(pending)
+		curr = popfirst!(pending)
+		while curr ∈ polygons
+			curr = if !isempty(pending)
+				popfirst!(pending)
+			else
+				nothing
+			end
+		end
+
+		if isnothing(curr)
+			break
+		end
+		
+		push!(polygons, curr)
+		for transform ∈ transforms
+			next = transform(curr)
+			if !(next ∈ polygons) && isinbounds(next)
+				push!(pending, next)
+			end			
+		end
+	end
+
+	polygons
+
+end
+
 # ╔═╡ 603531e5-59d0-4be9-b6e9-37929f5afd06
 """
 	path_vector(path::String)::Vec2D
@@ -816,17 +865,6 @@ struct Factor
 	finish::Int64
 end
 
-# ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
-const Factorization = Vector{Factor}
-
-# ╔═╡ d75dc891-3b79-4be8-9564-6eef1bdba3da
-"""
-Word from factorization, with first letter the first char of the first factor.
-"""
-function canonic_word(fact::Factorization)
-	fact .|> (f -> f.content) |> join
-end
-
 # ╔═╡ a71c4616-be41-4460-a23f-543f46851517
 @enum FactorizationKind begin
 	Translation
@@ -848,6 +886,17 @@ end
 	TypeOneHalfTurnReflection
 	TypeTwoHalfTurnReflection
 ]; default=TypeTwoHalfTurnReflection)
+
+# ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
+const Factorization = Vector{Factor}
+
+# ╔═╡ d75dc891-3b79-4be8-9564-6eef1bdba3da
+"""
+Word from factorization, with first letter the first char of the first factor.
+"""
+function canonic_word(fact::Factorization)
+	fact .|> (f -> f.content) |> join
+end
 
 # ╔═╡ ffd79659-26d5-4447-82cf-6e2a5f506dc6
 struct BWFactorization
@@ -1252,35 +1301,37 @@ function half_turn(w::String)::Union{BWFactorization, Nothing}
 	s(i) = mod1(i, l)
 	
 	for A_start ∈ 1:l
-		for B_start ∈ A_start+1:A_start+1+l-5
+
+		B_max = A_start + (l - 4) ÷ 2
+		for B_start ∈ A_start+1:B_max
 			A = factor(w, A_start, s(B_start-1))
-			
-			for C_start ∈ B_start+1:B_start+1+l-4
+
+			C_max = A_start + l - 1 - 2 - length(A)
+			for C_start ∈ B_start+1:C_max
 				B = factor(w, s(B_start), s(C_start-1))
 				if B.content |> ispalindrome
-					
-					for Â_start ∈ C_start+1:C_start+1+l-3
-						C = factor(w, s(C_start), s(Â_start-1))
-						if C.content |> ispalindrome
-							
-							for D_start ∈ Â_start+1:Â_start+1+l-2
-								Â = factor(w, s(Â_start), s(D_start-1))
-								if A.content == Â.content |> backtrack
-								
-									for E_start ∈ D_start+1:D_start+1+l-1
-										D = factor(w, s(D_start), s(E_start-1))
-										E = factor(w, s(E_start), s(A_start-1))
 
-										d = D.content |> ispalindrome
-										e = E.content |> ispalindrome
-										
-										if d && e
-											return BWFactorization(
-												[A, B, C, Â, D, E],
-												HalfTurn
-											)
-										end
-									end
+					Â_max = C_max + 1
+					for Â_start ∈ C_start+1:Â_max
+						D_start = Â_start + length(A)
+
+						C = factor(w, s(C_start), s(Â_start-1))
+						Â = factor(w, s(Â_start), s(D_start-1))
+						
+						if (C.content |> ispalindrome
+							&& A.content == Â.content |> backtrack)
+
+							E_max = A_start + l - 1
+							for E_start ∈ D_start+1:E_max
+								D = factor(w, s(D_start), s(E_start-1))
+								E = factor(w, s(E_start), s(A_start+l-1))
+
+								if (D.content |> ispalindrome
+									&& E.content |> ispalindrome)
+									return BWFactorization(
+										[A, B, C, Â, D, E],
+										HalfTurn
+									)
 								end
 							end
 						end
@@ -1395,7 +1446,7 @@ function type_one_reflection(w::String)::Union{BWFactorization, Nothing}
 end
 
 # ╔═╡ a25d4c5e-542f-4709-8f1f-b8adba8391c0
-@test !(type_one_reflection("urrrdrdddrurdddddlulddlullldluululuuururur") |> isnothing)
+@test !(type_one_reflection("rrrdrdddrurdddddlulddlullldluululuuurururu") |> isnothing)
 
 # ╔═╡ 255ee00f-eafb-458f-959f-97bc99023ea6
 function reflection_angle(a::String, b::String)
@@ -1482,7 +1533,7 @@ function type_two_reflection(w::String)
 end
 
 # ╔═╡ ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
-@test !(type_two_reflection("druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur") |> isnothing)
+@test !(type_two_reflection("ruuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrurd") |> isnothing)
 
 # ╔═╡ 9d3a0e5c-ea42-4924-bc0f-1fcb478626d7
 function type_two_reflection_transformations(word::String, fact::Factorization)
@@ -1579,7 +1630,7 @@ function anyfactorization(w::String)
 end
 
 # ╔═╡ 112ad530-59ce-44d7-ae85-adc0b44286b1
-@test !(type_one_half_turn_reflection("rurrdrrdlddlddldrrrrdldllulldlullurrululurrullurur") |> isnothing)
+@test !(type_one_half_turn_reflection("urrdrrdlddlddldrrrrdldllulldlullurrululurrullururr") |> isnothing)
 
 # ╔═╡ 15162be0-722a-44f1-83a3-0894eb65afda
 function type_one_half_turn_reflection_transformations(word::String, fact::Factorization)
@@ -1685,7 +1736,7 @@ end
 ad_factorization = factorize(ad_boundaryword, factorize_method)
 
 # ╔═╡ dd51011f-25e6-4a9a-bdc5-1710a3db8647
-@test type_two_half_turn_reflection("rdrdrdllddrurddddlllddldluurulluulluurdruurdruulurru") |> !isnothing
+@test type_two_half_turn_reflection("drdrdllddrurddddlllddldluurulluulluurdruurdruulurrur") |> !isnothing
 
 # rdrdr dllddrurdd ddllldd ldluurullu ulluurdruu rdruulurru
 
@@ -1734,13 +1785,17 @@ end
 # ╔═╡ f1d74824-2a73-45fb-a4dd-681e4e5991ac
 ad_transforms = transformations(ad_boundaryword, ad_factorization)
 
-# ╔═╡ 1c5716a9-4713-4cd8-9b56-1e938da3f8c4
-ad_tilepolygons = generate_tiling(ad_boundaryword, 15, ad_transforms)
+# ╔═╡ 762d2fc3-7c40-4505-8f87-4a0688d6e206
+ad_tilepolygons = generate_tiling(
+	ad_boundaryword,
+	(PLANE_WIN_X ÷ MIN_SQ_UNIT, PLANE_WIN_Y ÷ MIN_SQ_UNIT),
+	ad_transforms
+)
 
-# ╔═╡ e15fca26-68e7-4708-b653-374cd23c4597
+# ╔═╡ 174a803d-782c-472d-96b9-86715dc0ff76
 ad_tiling = (ad_tilepolygons
 	.|> (p -> scale(p, ad_UNIT))
-	.|> (p -> translate(p, (ad_xpan, ad_ypan))))
+	.|> (p -> translate(p, (PLANE_WIN_X ÷ 2, PLANE_WIN_Y ÷ 2))))
 
 # ╔═╡ a40114c7-9d06-4dfc-89c6-139955befb24
 @htl("""
@@ -2202,10 +2257,13 @@ version = "17.4.0+0"
 # ╟─a40114c7-9d06-4dfc-89c6-139955befb24
 # ╟─c32cff12-157e-42d7-a827-9a5760d44d8c
 # ╟─76061728-334e-4543-8d54-83520c3db87b
+# ╟─2f74f271-3f59-4edc-bc7a-0a950cb24bd7
+# ╟─2e92baef-efe4-4355-93a8-1c3797e17ece
+# ╟─c699b23f-2341-4a07-9d72-ff85585110f4
 # ╟─62e08347-baa0-44d4-8b06-84463813e498
 # ╟─f1d74824-2a73-45fb-a4dd-681e4e5991ac
-# ╟─1c5716a9-4713-4cd8-9b56-1e938da3f8c4
-# ╟─e15fca26-68e7-4708-b653-374cd23c4597
+# ╟─762d2fc3-7c40-4505-8f87-4a0688d6e206
+# ╟─174a803d-782c-472d-96b9-86715dc0ff76
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
@@ -2213,7 +2271,7 @@ version = "17.4.0+0"
 # ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
 # ╠═8665a82d-69ac-4a6b-aac5-20b333e5026d
-# ╠═5bd78da2-2445-4846-9b03-640f27917895
+# ╟─5bd78da2-2445-4846-9b03-640f27917895
 # ╟─8d359a24-7b62-4ead-b3ff-5c3fc8f3da32
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
 # ╟─ee001f50-0809-4272-86fb-727fd0fdb654
@@ -2233,6 +2291,7 @@ version = "17.4.0+0"
 # ╟─d75dc891-3b79-4be8-9564-6eef1bdba3da
 # ╟─31124ccb-2e65-4281-85b8-c355ec6a9b4d
 # ╟─ee24888e-2f89-4400-bd83-8caa73884c64
+# ╟─c15fbe9e-1bd8-43fa-89f2-a5fabde0e652
 # ╟─15b49802-11c5-420d-8227-01555b99de2d
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
 # ╟─3a0b058e-6921-4375-b514-7a05f19a26bb
@@ -2252,8 +2311,8 @@ version = "17.4.0+0"
 # ╟─e053352a-9582-416b-a110-80ae726c0552
 # ╟─3e4a972f-6b44-41a6-91d2-3f949b9b7004
 # ╠═70fba921-5e52-4b04-84e0-397087f0005c
-# ╟─9dac7d76-e344-4cce-bedd-ae6cb4bec111
 # ╠═a71c4616-be41-4460-a23f-543f46851517
+# ╠═9dac7d76-e344-4cce-bedd-ae6cb4bec111
 # ╠═ffd79659-26d5-4447-82cf-6e2a5f506dc6
 # ╟─cd430387-c391-4360-921b-3ca958a70d47
 # ╟─cd7d4c8f-b910-4b9f-95a5-0054c0e01ee7
@@ -2291,7 +2350,7 @@ version = "17.4.0+0"
 # ╟─4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
 # ╟─8c8cab8e-2922-4f39-8614-c9b45266ff9f
 # ╟─2cea2c5c-3942-473c-a231-0d4450346bf6
-# ╠═1e6d83b3-de76-41c4-92f9-000e25670dbb
+# ╟─1e6d83b3-de76-41c4-92f9-000e25670dbb
 # ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 # ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
 # ╟─a4092512-3cf2-4e1f-9ef3-188a7151b0a4
