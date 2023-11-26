@@ -1416,22 +1416,25 @@ function type_one_reflection_transformations(word::String, fact::Factorization)
 	t1 = path_vector(extract(word, start, finish))
 
 	# We can have only one reflection angle for both B and C, it’s used for tiling
-	θ = reflection_angle(fact[2], fact[3])
+	bθ = reflection_angle(fact[2], fact[3])
 
 	# Invert for 45 because the plane’s y axis is point downwards
-	θ = θ ∈ [45, -45] ? -θ : θ
+	bθ = bθ ∈ [45, -45] ? -bθ : bθ
+
+	cθ = reflection_angle(fact[5], fact[6])
+	cθ = cθ ∈ [45, -45] ? -cθ : cθ
 	
 	[
 		(pts -> translate(pts, t1)),
 		(pts -> translate(pts, .-t1)),
 		(pts -> begin
-			m = mirror(pts, θ; first_idx = fact[1].start)
+			m = mirror(pts, cθ; first_idx = fact[5].start)
 			tc = pts[fact[6].start] .- pts[fact[5].start]
 			translate(m, tc)
 		end),		
 		(pts -> begin
-			m = mirror(pts, θ; first_idx = fact[2].start)
-			tc = pts[fact[3].start] .- pts[fact[4].start]
+			m = mirror(pts, bθ; first_idx = fact[3].start)
+			tc = pts[fact[4].start] .- pts[fact[3].start]
 			translate(m, tc)
 		end),
 	]
@@ -2315,7 +2318,7 @@ version = "17.4.0+0"
 # ╟─641980e2-3399-41b2-b951-f2dcf462d8f9
 # ╟─d6ad5f54-eb9c-43b1-acf9-da318b2e6848
 # ╟─dd51011f-25e6-4a9a-bdc5-1710a3db8647
-# ╠═719b60e8-98b3-439a-991d-ddbcabee3b63
+# ╟─719b60e8-98b3-439a-991d-ddbcabee3b63
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
