@@ -693,6 +693,8 @@ function rotate(pts, θ; first_idx = 1)
 
 	if θ == 180
 		pts .|> (pt -> pt .- fst) .|> (.-) .|> (pt -> pt .+ fst)
+	elseif θ == 90
+		pts .|> (pt -> pt .- fst) .|> (pt -> (pt[2], -pt[1])) .|> (pt -> pt .+ fst)
 	end
 end
 
@@ -1305,7 +1307,7 @@ function isΘdrome(w::String, θ::Int64)::Bool
 
 	valid = true
 	while i ≤ j && valid
-		valid = w[i] == tθ(w[j], θ+180)
+		valid = tθ(w[i], θ+180) == w[j]
 		i += 1
 		j -= 1
 	end
@@ -1398,6 +1400,65 @@ function half_turn_transformations(word::String, fact::Factorization)
 		(pts -> begin
 			r = rotate(pts, 180; first_idx = fact[6].start)
 			te = pts[fact[1].start] .- pts[fact[6].start]
+			translate(r, te)
+		end),
+	]
+end
+
+# ╔═╡ 8c141949-4bf2-45ed-bf65-c033a3039e2b
+md"""
+### Quarter-Turn Factorization
+"""
+
+# ╔═╡ aec03332-7823-4a88-aa1c-5d8ef8ce69da
+is90drome(w::String) = isΘdrome(w, 90)
+
+# ╔═╡ d30021de-db76-4e58-bb3f-be466f927cd5
+@test is90drome("urrddr")
+
+# ╔═╡ 19d1ff0d-80c7-4060-88e7-707ab293fbbd
+function quarter_turn(w::String)::Union{BWFactorization, Nothing}
+	l = length(w)
+	s(i) = mod1(i, l)
+	
+	for A_start ∈ 1:l
+
+		for B_start ∈ A_start+1:A_start+l-1-1
+			A = factor(w, A_start, s(B_start-1))
+			if A.content |> ispalindrome
+
+				for C_start ∈ B_start+1:A_start+l-1
+					B = factor(w, s(B_start), s(C_start-1))
+					C = factor(w, s(C_start), s(A_start+l-1))
+
+					if B.content |> is90drome && C.content |> is90drome
+						return BWFactorization(
+							[A, B, C],
+							QuarterTurn
+						)
+					end
+				end
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ 1d406b44-350e-41b6-92e7-ab7eb406b0be
+@test !(quarter_turn("druuurddrurrddrdlldrrrdlddrdldluldluullurullurulluur") |> isnothing)
+
+# ╔═╡ 1d446a2c-cf62-40b9-a01a-b05925f560d6
+function quarter_turn_transformations(word::String, fact::Factorization)
+	[
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			te = pts[fact[2].start] .- pts[fact[1].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			r = rotate(pts, 90; first_idx = fact[2].start)
+			te = pts[fact[3].start] .- pts[fact[2].start]
 			translate(r, te)
 		end),
 	]
@@ -1745,6 +1806,7 @@ function factorize(word::String, method::FactorizationKind)
 	elseif method == HalfTurn
 		half_turn(word)
 	elseif method == QuarterTurn
+		quarter_turn(word)
 	elseif method == TypeOneReflection
 		type_one_reflection(word)
 	elseif method == TypeTwoReflection
@@ -1795,6 +1857,8 @@ function transformations(bw::String, fact::BWFactorization)
 		bn_transformations(bw, fact.fact)
 	elseif fact.kind == HalfTurn
 		half_turn_transformations(bw, fact.fact)
+	elseif fact.kind == QuarterTurn
+		quarter_turn_transformations(bw, fact.fact)
 	elseif fact.kind == TypeOneReflection
 		type_one_reflection_transformations(bw, fact.fact)
 	elseif fact.kind == TypeTwoReflection
@@ -2379,6 +2443,12 @@ version = "17.4.0+0"
 # ╟─8c8cab8e-2922-4f39-8614-c9b45266ff9f
 # ╟─2cea2c5c-3942-473c-a231-0d4450346bf6
 # ╟─1e6d83b3-de76-41c4-92f9-000e25670dbb
+# ╟─8c141949-4bf2-45ed-bf65-c033a3039e2b
+# ╟─aec03332-7823-4a88-aa1c-5d8ef8ce69da
+# ╟─d30021de-db76-4e58-bb3f-be466f927cd5
+# ╟─19d1ff0d-80c7-4060-88e7-707ab293fbbd
+# ╟─1d406b44-350e-41b6-92e7-ab7eb406b0be
+# ╟─1d446a2c-cf62-40b9-a01a-b05925f560d6
 # ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 # ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
 # ╟─a4092512-3cf2-4e1f-9ef3-188a7151b0a4
