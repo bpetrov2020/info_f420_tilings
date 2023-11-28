@@ -565,6 +565,30 @@ md"""
 ### Factorizations
 """
 
+# ╔═╡ 556cc741-c004-4ea6-a7ad-8779a59f2962
+md"""
+Before presenting all possible factorizations, we introduce a few useful notions to understand them. The definitions we given here are more intuitive than formal, and we refer the interested reader to the paper in question. We consider $W$ any word on the alphabet we defined before, not necessarily a boundary word.
+
+If we see words as paths in the plane, the backtrack of $W$, written $\hat{W}$, is the sequence of directions taken if we walk along $W$ starting from the end. Practically, for $W = urrul$ we have $\hat{W} = rdlld$.
+
+A word $W$ is a palindrome if we can place ourselves in the middle of the word and walk forwards and backwards and encounter the same letters in both directions up to the end. In other words, we can cut $W$ in two and the second half is the reverse of the first. The reverse being the letters considered from the end up to the beginning, which is different the backtrack. As an example, $W = uurrdlldrruu$ is a palindrome whereas $W = urrld$ is not.
+
+Similarly, a word is a 90-drome if we can split it in two and the second half is the result of a clockwise rotation by 90° of the first half in the plane. This being a bit rough, it is best understood with the example below where the 3rd word is 90-drome:
+
+"""
+
+# ╔═╡ 67a35fa9-b56a-467a-a0c7-126832af1b1c
+PlutoUI.LocalResource("res/90drome.svg", :width => "100%")
+
+# ╔═╡ 0f69ef6a-831f-4dfe-b755-4016a9e2dd65
+md"""
+Lastly, the reflection of a word $W$ by $Θ°$, written $f_Θ(W)$ is the result of reflecting each of its letters across a line with angle Θ° from the x-axis. As with the 90-drome, it is better understood with an example. Both words below are a 45° reflection of each other:
+
+"""
+
+# ╔═╡ 177c821a-a75b-44f7-a15e-9dfc061556aa
+PlutoUI.LocalResource("res/reflection.svg", :width => "100%", :height => "250")
+
 # ╔═╡ 2139c37b-422d-4524-9bf8-e59dbfa105fc
 md"""
 
@@ -2250,6 +2274,10 @@ version = "17.4.0+0"
 # ╟─8c471070-7629-4957-821f-61b50d52e936
 # ╟─917a93f6-153f-4eac-a740-04ee407a21a6
 # ╟─600d4c07-f5c2-418c-acbb-d6142155e74e
+# ╟─556cc741-c004-4ea6-a7ad-8779a59f2962
+# ╟─67a35fa9-b56a-467a-a0c7-126832af1b1c
+# ╟─0f69ef6a-831f-4dfe-b755-4016a9e2dd65
+# ╟─177c821a-a75b-44f7-a15e-9dfc061556aa
 # ╟─2139c37b-422d-4524-9bf8-e59dbfa105fc
 # ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
 # ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
