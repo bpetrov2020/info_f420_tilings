@@ -546,7 +546,7 @@ md"""
 md"""
 One way to see the boundary of one polyomino is as one sees a polygon, that is as a set of points connected and separating a region of the plane. However, this is not very convenient to study them. Another way is that of the _boundary word_. Since all edges are either vertical or horizontal, and the lengths of the edges are integers (say one unit square is of size 1), we can picture the polyominoes as a sequence of instructions to build them.
 
-The alphabet would be $Σ = \{r, u, l, d\}$ for the four directions (right, up, left, down). We then choose an arbitrary extremity $e$, and enurate the moves to walk along the boundary and get back to $e$. Here’s an example to better understand how it works:
+The alphabet would be $Σ = \{r, u, l, d\}$ for the four directions (right, up, left, down). We then choose an arbitrary extremity $e$, and enurate the moves to walk along the boundary in clockwise order and get back to $e$. Here’s an example to better understand how it works:
 """
 
 # ╔═╡ 8c471070-7629-4957-821f-61b50d52e936
@@ -556,7 +556,7 @@ PlutoUI.LocalResource("./res/boundary_word.svg", :height => 200, :width=>"100%")
 md"""
 The boundary word of the polyomino $P$ right above is $𝑩(P) = rrrdlllu$, starting from the upper left corner. However, we could’ve started from any other point and, for example, $rdlllurr$ is just as valid a word boundary for this polyomino.
 
-The fact that we now work with words instead of polyominoes mean that we can use the many results, algorithms and data structures stemming from bioinformatics and general word processing to study our shapes. This is main idea of the paper at hand, to use strong structural results to find whether we can from the word boundary build one the 7 factorizations that induce isohedral tilings. A _factorization_ is a splitting of the boundary word into subwords that hopefully have some desired properties.
+The fact that we now work with words instead of polyominoes means that we can use the many results, algorithms and data structures stemming from bioinformatics and general word processing to study our shapes. This is main idea of the paper at hand, to use strong structural results to find whether we can, from the word boundary, build one of the 7 factorizations that induce an isohedral tilings. A _factorization_ is a splitting of the boundary word into subwords.
 
 """
 
@@ -565,14 +565,64 @@ md"""
 ### Factorizations
 """
 
+# ╔═╡ 556cc741-c004-4ea6-a7ad-8779a59f2962
+md"""
+Before presenting all possible factorizations, we introduce a few useful notions to understand them. The definitions we given here are more intuitive than formal, and we refer the interested reader to the paper in question. We consider $W$ any word on the alphabet we defined before, not necessarily a boundary word.
+
+If we see words as paths in the plane, the backtrack of $W$, written $\hat{W}$, is the sequence of directions taken if we walk along $W$ starting from the end. Practically, for $W = urrul$ we have $\hat{W} = rdlld$.
+
+A word $W$ is a palindrome if we can place ourselves in the middle of the word and walk forwards and backwards and encounter the same letters in both directions up to the end. In other words, we can cut $W$ in two and the second half is the reverse of the first. The reverse being the letters considered from the end up to the beginning, which is different the backtrack. As an example, $W = uurrdlldrruu$ is a palindrome whereas $W = urrld$ is not.
+
+Similarly, a word is a 90-drome if we can split it in two and the second half is the result of a clockwise rotation by 90° of the first half in the plane. This being a bit rough, it is best understood with the example below where the 3rd word is 90-drome:
+
+"""
+
+# ╔═╡ 67a35fa9-b56a-467a-a0c7-126832af1b1c
+PlutoUI.LocalResource("res/90drome.svg", :width => "100%")
+
+# ╔═╡ 0f69ef6a-831f-4dfe-b755-4016a9e2dd65
+md"""
+Lastly, the reflection of a word $W$ by $Θ°$, written $f_Θ(W)$ is the result of reflecting each of its letters across a line with angle Θ° from the x-axis. As with the 90-drome, it is better understood with an example. Both words below are a 45° reflection of each other:
+
+"""
+
+# ╔═╡ 177c821a-a75b-44f7-a15e-9dfc061556aa
+PlutoUI.LocalResource("res/reflection.svg", :width => "100%", :height => "250")
+
 # ╔═╡ 2139c37b-422d-4524-9bf8-e59dbfa105fc
 md"""
 
-With this in mind, here are those factorizations:
+With this in mind, here are the 7 factorizations that induce a tiling:
 
 - Translation: $ABC\hat{A}\hat{B}\hat{C}$
-- Half-Turn: $ABC\hat{A}DE$ with B, C, D, E palindromes
-- Quarter-Turn = 
+- Half-Turn: $ABC\hat{A}DE$ with $B$, $C$, $D$, $E$ palindromes
+- Quarter-Turn: $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes
+- Type-1 Reflection: $ABf_Θ(B)\hat{A}Cf_Φ(C)$ for some $Θ$, $Φ$
+- Type-2 Reflection: $ABC\hat{A}f_Θ(C)f_Θ(B)$
+- Type-1 Half-Turn-Reflection: $ABC\hat{A}Df_Θ(D)$ with $B$, $C$ palindromes
+- Type-2 Half-Turn-Reflection: $ABCDf_Θ(B)f_Φ(D)$ with $A$, $C$ palindromes and $Θ - Φ = ±90°$
+"""
+
+# ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
+md"""
+## Advanced Interactive Showcase
+"""
+
+# ╔═╡ 551b3fdd-cc9f-47c2-ab76-f523ecb4db08
+@bind ad_boundaryword TextField(60;default="rdrdrdllddrurddddlllddldluurulluulluurdruurdruulurru")
+
+# ╔═╡ 2f74f271-3f59-4edc-bc7a-0a950cb24bd7
+PLANE_WIN_X = 700
+
+# ╔═╡ 2e92baef-efe4-4355-93a8-1c3797e17ece
+PLANE_WIN_Y = 300
+
+# ╔═╡ c699b23f-2341-4a07-9d72-ff85585110f4
+MIN_SQ_UNIT = 8
+
+# ╔═╡ c32cff12-157e-42d7-a827-9a5760d44d8c
+md"""
+**Zoom** $(@bind ad_UNIT Slider(MIN_SQ_UNIT:30))
 """
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
@@ -605,6 +655,9 @@ begin
 	$(bw)
 	"""
 end
+
+# ╔═╡ 8d359a24-7b62-4ead-b3ff-5c3fc8f3da32
+transformations(bw::String, fact::Nothing) = []
 
 # ╔═╡ 18389ab9-4fc4-49f4-9bc9-b855b7c16232
 md"""
@@ -757,6 +810,46 @@ function generate_tiling(word::String, size::Integer, transforms)::Vector{Polygo
 	polygons
 end
 
+# ╔═╡ c15fbe9e-1bd8-43fa-89f2-a5fabde0e652
+function generate_tiling(word::String, bounds::Tuple{Int64, Int64}, transforms)
+	max_x = bounds[1] ÷ 2
+	min_x = -max_x
+
+	max_y = bounds[2] ÷ 2
+	min_y = -max_y
+
+	isinbounds(poly) = any(pt -> min_x ≤ pt[1] ≤ max_x && min_y ≤ pt[2] ≤ max_y, poly)
+	
+	polygons = []
+	pending = [path_points(word)]
+
+	while !isempty(pending)
+		curr = popfirst!(pending)
+		while curr ∈ polygons
+			curr = if !isempty(pending)
+				popfirst!(pending)
+			else
+				nothing
+			end
+		end
+
+		if isnothing(curr)
+			break
+		end
+		
+		push!(polygons, curr)
+		for transform ∈ transforms
+			next = transform(curr)
+			if !(next ∈ polygons) && isinbounds(next)
+				push!(pending, next)
+			end			
+		end
+	end
+
+	polygons
+
+end
+
 # ╔═╡ 603531e5-59d0-4be9-b6e9-37929f5afd06
 """
 	path_vector(path::String)::Vec2D
@@ -796,17 +889,6 @@ struct Factor
 	finish::Int64
 end
 
-# ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
-const Factorization = Vector{Factor}
-
-# ╔═╡ d75dc891-3b79-4be8-9564-6eef1bdba3da
-"""
-Word from factorization, with first letter the first char of the first factor.
-"""
-function canonic_word(fact::Factorization)
-	fact .|> (f -> f.content) |> join
-end
-
 # ╔═╡ a71c4616-be41-4460-a23f-543f46851517
 @enum FactorizationKind begin
 	Translation
@@ -816,6 +898,28 @@ end
 	TypeTwoReflection
 	TypeOneHalfTurnReflection
 	TypeTwoHalfTurnReflection
+end
+
+# ╔═╡ 178e06b5-3e14-4ffa-9c99-369cf322f53d
+@bind factorize_method Select([
+	Translation
+	HalfTurn
+	QuarterTurn
+	TypeOneReflection
+	TypeTwoReflection
+	TypeOneHalfTurnReflection
+	TypeTwoHalfTurnReflection
+]; default=TypeTwoHalfTurnReflection)
+
+# ╔═╡ 9dac7d76-e344-4cce-bedd-ae6cb4bec111
+const Factorization = Vector{Factor}
+
+# ╔═╡ d75dc891-3b79-4be8-9564-6eef1bdba3da
+"""
+Word from factorization, with first letter the first char of the first factor.
+"""
+function canonic_word(fact::Factorization)
+	fact .|> (f -> f.content) |> join
 end
 
 # ╔═╡ ffd79659-26d5-4447-82cf-6e2a5f506dc6
@@ -1221,35 +1325,37 @@ function half_turn(w::String)::Union{BWFactorization, Nothing}
 	s(i) = mod1(i, l)
 	
 	for A_start ∈ 1:l
-		for B_start ∈ A_start+1:A_start+1+l-5
+
+		B_max = A_start + (l - 4) ÷ 2
+		for B_start ∈ A_start+1:B_max
 			A = factor(w, A_start, s(B_start-1))
-			
-			for C_start ∈ B_start+1:B_start+1+l-4
+
+			C_max = A_start + l - 1 - 2 - length(A)
+			for C_start ∈ B_start+1:C_max
 				B = factor(w, s(B_start), s(C_start-1))
 				if B.content |> ispalindrome
-					
-					for Â_start ∈ C_start+1:C_start+1+l-3
-						C = factor(w, s(C_start), s(Â_start-1))
-						if C.content |> ispalindrome
-							
-							for D_start ∈ Â_start+1:Â_start+1+l-2
-								Â = factor(w, s(Â_start), s(D_start-1))
-								if A.content == Â.content |> backtrack
-								
-									for E_start ∈ D_start+1:D_start+1+l-1
-										D = factor(w, s(D_start), s(E_start-1))
-										E = factor(w, s(E_start), s(A_start-1))
 
-										d = D.content |> ispalindrome
-										e = E.content |> ispalindrome
-										
-										if d && e
-											return BWFactorization(
-												[A, B, C, Â, D, E],
-												HalfTurn
-											)
-										end
-									end
+					Â_max = C_max + 1
+					for Â_start ∈ C_start+1:Â_max
+						D_start = Â_start + length(A)
+
+						C = factor(w, s(C_start), s(Â_start-1))
+						Â = factor(w, s(Â_start), s(D_start-1))
+						
+						if (C.content |> ispalindrome
+							&& A.content == Â.content |> backtrack)
+
+							E_max = A_start + l - 1
+							for E_start ∈ D_start+1:E_max
+								D = factor(w, s(D_start), s(E_start-1))
+								E = factor(w, s(E_start), s(A_start+l-1))
+
+								if (D.content |> ispalindrome
+									&& E.content |> ispalindrome)
+									return BWFactorization(
+										[A, B, C, Â, D, E],
+										HalfTurn
+									)
 								end
 							end
 						end
@@ -1275,28 +1381,24 @@ function half_turn_transformations(word::String, fact::Factorization)
 		(pts -> translate(pts, t1)),
 		(pts -> translate(pts, .-t1)),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			te = pts[fact[6].start] .- pts[fact[1].start]
+			r = rotate(pts, 180; first_idx = fact[2].start)
+			te = pts[fact[3].start] .- pts[fact[2].start]
 			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			te = pts[fact[6].start] .- pts[fact[1].start]
-			td = pts[fact[5].start] .- pts[fact[1].start]
-			translate(r, td .+ te)
+			r = rotate(pts, 180; first_idx = fact[3].start)
+			te = pts[fact[4].start] .- pts[fact[3].start]
+			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			a = pts[fact[2].start] .- pts[fact[1].start]
-			t = pts[fact[3].start] .- pts[fact[2].start]
-			translate(r,  2 .* a .+ t)
+			r = rotate(pts, 180; first_idx = fact[5].start)
+			te = pts[fact[6].start] .- pts[fact[5].start]
+			translate(r, te)
 		end),
 		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			a = pts[fact[2].start] .- pts[fact[1].start]
-			tb = pts[fact[3].start] .- pts[fact[2].start]
-			tc = pts[fact[4].start] .- pts[fact[2].start]
-			translate(r,  2 .* a .+ tb .+ tc)
+			r = rotate(pts, 180; first_idx = fact[6].start)
+			te = pts[fact[1].start] .- pts[fact[6].start]
+			translate(r, te)
 		end),
 	]
 end
@@ -1368,7 +1470,7 @@ function type_one_reflection(w::String)::Union{BWFactorization, Nothing}
 end
 
 # ╔═╡ a25d4c5e-542f-4709-8f1f-b8adba8391c0
-@test !(type_one_reflection("urrrdrdddrurdddddlulddlullldluululuuururur") |> isnothing)
+@test !(type_one_reflection("rrrdrdddrurdddddlulddlullldluululuuurururu") |> isnothing)
 
 # ╔═╡ 255ee00f-eafb-458f-959f-97bc99023ea6
 function reflection_angle(a::String, b::String)
@@ -1385,22 +1487,25 @@ function type_one_reflection_transformations(word::String, fact::Factorization)
 	t1 = path_vector(extract(word, start, finish))
 
 	# We can have only one reflection angle for both B and C, it’s used for tiling
-	θ = reflection_angle(fact[2], fact[3])
+	bθ = reflection_angle(fact[2], fact[3])
 
 	# Invert for 45 because the plane’s y axis is point downwards
-	θ = θ ∈ [45, -45] ? -θ : θ
+	bθ = bθ ∈ [45, -45] ? -bθ : bθ
+
+	cθ = reflection_angle(fact[5], fact[6])
+	cθ = cθ ∈ [45, -45] ? -cθ : cθ
 	
 	[
 		(pts -> translate(pts, t1)),
 		(pts -> translate(pts, .-t1)),
 		(pts -> begin
-			m = mirror(pts, θ; first_idx = fact[1].start)
+			m = mirror(pts, cθ; first_idx = fact[5].start)
 			tc = pts[fact[6].start] .- pts[fact[5].start]
 			translate(m, tc)
 		end),		
 		(pts -> begin
-			m = mirror(pts, θ; first_idx = fact[2].start)
-			tc = pts[fact[3].start] .- pts[fact[4].start]
+			m = mirror(pts, bθ; first_idx = fact[3].start)
+			tc = pts[fact[4].start] .- pts[fact[3].start]
 			translate(m, tc)
 		end),
 	]
@@ -1452,7 +1557,7 @@ function type_two_reflection(w::String)
 end
 
 # ╔═╡ ed2d4fec-3523-4d67-992b-b8e8c6ce3fb9
-@test !(type_two_reflection("druuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrur") |> isnothing)
+@test !(type_two_reflection("ruuurddrrddldrrrdlddddllluuldddlulluuuuluulurrrurd") |> isnothing)
 
 # ╔═╡ 9d3a0e5c-ea42-4924-bc0f-1fcb478626d7
 function type_two_reflection_transformations(word::String, fact::Factorization)
@@ -1549,7 +1654,7 @@ function anyfactorization(w::String)
 end
 
 # ╔═╡ 112ad530-59ce-44d7-ae85-adc0b44286b1
-@test !(type_one_half_turn_reflection("rurrdrrdlddlddldrrrrdldllulldlullurrululurrullurur") |> isnothing)
+@test !(type_one_half_turn_reflection("urrdrrdlddlddldrrrrdldllulldlullurrululurrullururr") |> isnothing)
 
 # ╔═╡ 15162be0-722a-44f1-83a3-0894eb65afda
 function type_one_half_turn_reflection_transformations(word::String, fact::Factorization)
@@ -1578,6 +1683,112 @@ function type_one_half_turn_reflection_transformations(word::String, fact::Facto
 	]
 end
 
+# ╔═╡ 641980e2-3399-41b2-b951-f2dcf462d8f9
+md"""
+### Type-2 Half-Turn Reflection
+"""
+
+# ╔═╡ d6ad5f54-eb9c-43b1-acf9-da318b2e6848
+function type_two_half_turn_reflection(w::String)
+	l = length(w)
+	s(i) = mod1(i, l)
+
+	for A_start ∈ 1:l
+		for B_start ∈ A_start+1:A_start+l-1-4
+			A = factor(w, s(A_start), s(B_start-1))
+			if A.content |> ispalindrome
+
+				C_max = B_start + (l - length(A) - 3) ÷ 2
+				for C_start ∈ B_start+1:C_max
+					B = factor(w, s(B_start), s(C_start-1))
+
+					D_max = A_start + l - 1 - 1 - length(B)
+					for D_start ∈ C_start+1:D_max
+						C = factor(w, s(C_start), s(D_start - 1))
+
+						D_size = (l - length(A) - length(C) - 2 * length(B)) ÷ 2
+						BF_start = D_start + D_size
+						DF_start = BF_start + length(B)
+
+						D = factor(w, s(D_start), s(BF_start-1))
+						BF = factor(w, s(BF_start), s(DF_start-1))
+						DF = factor(w, s(DF_start), s(A_start+l-1))
+
+						if (C.content |> ispalindrome
+							&& isanyreflection(B, BF)
+							&& isanyreflection(D, DF))
+							
+							bθ = reflection_angle(B, BF)
+							dθ = reflection_angle(D, DF)
+							sm = bθ - dθ
+
+							if sm == 90 || sm == -90
+								return BWFactorization(
+								[A, B, C, D, BF, DF],
+								TypeTwoHalfTurnReflection
+							)
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	nothing
+end
+
+# ╔═╡ 76061728-334e-4543-8d54-83520c3db87b
+function factorize(word::String, method::FactorizationKind)
+	if method == Translation
+		bn_factorization(word)
+	elseif method == HalfTurn
+		half_turn(word)
+	elseif method == QuarterTurn
+	elseif method == TypeOneReflection
+		type_one_reflection(word)
+	elseif method == TypeTwoReflection
+		type_two_reflection(word)
+	elseif method == TypeOneHalfTurnReflection
+		type_one_half_turn_reflection(word)
+	elseif method == TypeTwoHalfTurnReflection
+		type_two_half_turn_reflection(word)
+	end
+end
+
+# ╔═╡ 62e08347-baa0-44d4-8b06-84463813e498
+ad_factorization = factorize(ad_boundaryword, factorize_method)
+
+# ╔═╡ dd51011f-25e6-4a9a-bdc5-1710a3db8647
+@test type_two_half_turn_reflection("drdrdllddrurddddlllddldluurulluulluurdruurdruulurrur") |> !isnothing
+
+# rdrdr dllddrurdd ddllldd ldluurullu ulluurdruu rdruulurru
+
+# ╔═╡ 719b60e8-98b3-439a-991d-ddbcabee3b63
+function type_two_half_turn_reflection_transformations(word::String, fact::Factorization)
+
+	bθ = reflection_angle(fact[2], fact[5])
+	bθ = bθ ∈ [45, -45] ? -bθ : bθ
+	
+	[
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[1].start)
+			te = pts[fact[2].start] .- pts[fact[1].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			r = rotate(pts, 180; first_idx = fact[3].start)
+			te = pts[fact[4].start] .- pts[fact[3].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			m = mirror(pts, bθ; first_idx = fact[5].start)
+			tc = pts[fact[2].start] .- pts[fact[5].start]
+			translate(m, tc)
+		end),		
+	]
+end
+
 # ╔═╡ 5bd78da2-2445-4846-9b03-640f27917895
 function transformations(bw::String, fact::BWFactorization)
 	if fact.kind == Translation
@@ -1588,10 +1799,63 @@ function transformations(bw::String, fact::BWFactorization)
 		type_one_reflection_transformations(bw, fact.fact)
 	elseif fact.kind == TypeTwoReflection
 		type_two_reflection_transformations(bw, fact.fact)
-	elseif fact.kind === TypeOneHalfTurnReflection
+	elseif fact.kind == TypeOneHalfTurnReflection
 		type_one_half_turn_reflection_transformations(bw, fact.fact)
+	elseif fact.kind == TypeTwoHalfTurnReflection
+		type_two_half_turn_reflection_transformations(bw, fact.fact)
 	end
 end
+
+# ╔═╡ f1d74824-2a73-45fb-a4dd-681e4e5991ac
+ad_transforms = transformations(ad_boundaryword, ad_factorization)
+
+# ╔═╡ 762d2fc3-7c40-4505-8f87-4a0688d6e206
+ad_tilepolygons = generate_tiling(
+	ad_boundaryword,
+	(PLANE_WIN_X ÷ MIN_SQ_UNIT, PLANE_WIN_Y ÷ MIN_SQ_UNIT),
+	ad_transforms
+)
+
+# ╔═╡ 174a803d-782c-472d-96b9-86715dc0ff76
+ad_tiling = (ad_tilepolygons
+	.|> (p -> scale(p, ad_UNIT))
+	.|> (p -> translate(p, (PLANE_WIN_X ÷ 2, PLANE_WIN_Y ÷ 2))))
+
+# ╔═╡ a40114c7-9d06-4dfc-89c6-139955befb24
+@htl("""
+	<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
+	
+	<script id="drawing">
+	
+	
+	// const svg = this == null ? DOM.svg(600,300) : this
+	// const s = this == null ? d3.select(svg) : this.s
+	
+	const svg = DOM.svg("100%", 300)
+	const s = d3.select(svg)
+	
+	s.append("rect")
+	    .attr("width", "100%")
+	    .attr("height", "100%")
+	    .attr("fill", "white");
+	
+	const line = d3.line()
+	let data = $ad_tiling
+	
+	data.forEach((polygon) => {
+		s.append("path")
+			.attr("d", line(polygon))
+			.attr("stroke", "black")
+			.attr("fill", "white")
+	})
+	
+	const output = svg
+	output.s = s
+	return output
+	
+	</script>
+	
+	""")
 
 # ╔═╡ 9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 begin
@@ -1672,11 +1936,6 @@ end
 	
 	""")
 
-
-# ╔═╡ 641980e2-3399-41b2-b951-f2dcf462d8f9
-md"""
-### Type-2 Half-Turn Reflection
-"""
 
 # ╔═╡ 3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 md"## Notebook related"
@@ -2015,7 +2274,24 @@ version = "17.4.0+0"
 # ╟─8c471070-7629-4957-821f-61b50d52e936
 # ╟─917a93f6-153f-4eac-a740-04ee407a21a6
 # ╟─600d4c07-f5c2-418c-acbb-d6142155e74e
+# ╟─556cc741-c004-4ea6-a7ad-8779a59f2962
+# ╟─67a35fa9-b56a-467a-a0c7-126832af1b1c
+# ╟─0f69ef6a-831f-4dfe-b755-4016a9e2dd65
+# ╟─177c821a-a75b-44f7-a15e-9dfc061556aa
 # ╟─2139c37b-422d-4524-9bf8-e59dbfa105fc
+# ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
+# ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
+# ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
+# ╟─a40114c7-9d06-4dfc-89c6-139955befb24
+# ╟─c32cff12-157e-42d7-a827-9a5760d44d8c
+# ╟─76061728-334e-4543-8d54-83520c3db87b
+# ╟─2f74f271-3f59-4edc-bc7a-0a950cb24bd7
+# ╟─2e92baef-efe4-4355-93a8-1c3797e17ece
+# ╟─c699b23f-2341-4a07-9d72-ff85585110f4
+# ╟─62e08347-baa0-44d4-8b06-84463813e498
+# ╟─f1d74824-2a73-45fb-a4dd-681e4e5991ac
+# ╟─762d2fc3-7c40-4505-8f87-4a0688d6e206
+# ╟─174a803d-782c-472d-96b9-86715dc0ff76
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
@@ -2024,6 +2300,7 @@ version = "17.4.0+0"
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
 # ╠═8665a82d-69ac-4a6b-aac5-20b333e5026d
 # ╟─5bd78da2-2445-4846-9b03-640f27917895
+# ╟─8d359a24-7b62-4ead-b3ff-5c3fc8f3da32
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
 # ╟─ee001f50-0809-4272-86fb-727fd0fdb654
 # ╟─a0c1f409-c98a-40fb-aee9-93ce587c508e
@@ -2042,6 +2319,7 @@ version = "17.4.0+0"
 # ╟─d75dc891-3b79-4be8-9564-6eef1bdba3da
 # ╟─31124ccb-2e65-4281-85b8-c355ec6a9b4d
 # ╟─ee24888e-2f89-4400-bd83-8caa73884c64
+# ╟─c15fbe9e-1bd8-43fa-89f2-a5fabde0e652
 # ╟─15b49802-11c5-420d-8227-01555b99de2d
 # ╟─092d59e2-d814-48e5-87ca-db6fdfbbe934
 # ╟─3a0b058e-6921-4375-b514-7a05f19a26bb
@@ -2061,8 +2339,8 @@ version = "17.4.0+0"
 # ╟─e053352a-9582-416b-a110-80ae726c0552
 # ╟─3e4a972f-6b44-41a6-91d2-3f949b9b7004
 # ╠═70fba921-5e52-4b04-84e0-397087f0005c
-# ╟─9dac7d76-e344-4cce-bedd-ae6cb4bec111
 # ╠═a71c4616-be41-4460-a23f-543f46851517
+# ╠═9dac7d76-e344-4cce-bedd-ae6cb4bec111
 # ╠═ffd79659-26d5-4447-82cf-6e2a5f506dc6
 # ╟─cd430387-c391-4360-921b-3ca958a70d47
 # ╟─cd7d4c8f-b910-4b9f-95a5-0054c0e01ee7
@@ -2121,6 +2399,9 @@ version = "17.4.0+0"
 # ╟─112ad530-59ce-44d7-ae85-adc0b44286b1
 # ╟─15162be0-722a-44f1-83a3-0894eb65afda
 # ╟─641980e2-3399-41b2-b951-f2dcf462d8f9
+# ╟─d6ad5f54-eb9c-43b1-acf9-da318b2e6848
+# ╟─dd51011f-25e6-4a9a-bdc5-1710a3db8647
+# ╟─719b60e8-98b3-439a-991d-ddbcabee3b63
 # ╟─3f57a6c8-d02d-4c29-8b0d-4e8871f60900
 # ╠═49735ec6-6b0e-4e8e-995c-cc2e8c41e625
 # ╠═e32b500b-68b1-4cea-aac5-f6755cfcc5b6
