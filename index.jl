@@ -507,11 +507,6 @@ md"""
 ### Plane Tiling
 """
 
-# ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
-md"""
-**Pan** (x = $(@bind xpan Scrubbable(0:10:600)), y = $(@bind ypan Scrubbable(0:10:300))) & **Zoom** $(@bind UNIT Slider(5:30))
-"""
-
 # ╔═╡ c1587642-84ed-459f-855d-fdd07ac3f761
 md"## Theoretical explanations"
 
@@ -620,6 +615,11 @@ PLANE_WIN_Y = 300
 # ╔═╡ c699b23f-2341-4a07-9d72-ff85585110f4
 MIN_SQ_UNIT = 8
 
+# ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
+md"""
+**Zoom** $(@bind UNIT Slider(MIN_SQ_UNIT:30))
+"""
+
 # ╔═╡ c32cff12-157e-42d7-a827-9a5760d44d8c
 md"""
 **Zoom** $(@bind ad_UNIT Slider(MIN_SQ_UNIT:30))
@@ -633,6 +633,17 @@ md"""
 ## Current factorization state
 """
 
+# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
+begin
+	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
+	
+	md"""
+	The boundary of the polyomino $P$ is:
+	
+	$(bw)
+	"""
+end
+
 # ╔═╡ 77a355a2-7591-4d18-955b-bbf6c7e19dda
 # No pretty, but otherwise the export is kinda fucked up
 boundary_word = try
@@ -643,17 +654,6 @@ boundary_word = try
 	end
 catch e
 	""
-end
-
-# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
-begin
-	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
-	
-	md"""
-	The boundary of the polyomino $P$ is:
-	
-	$(bw)
-	"""
 end
 
 # ╔═╡ 8d359a24-7b62-4ead-b3ff-5c3fc8f3da32
@@ -1318,6 +1318,12 @@ end
 # ╔═╡ b02c5236-bc24-40ab-b452-3b3e61853016
 ispalindrome(w::String) = isΘdrome(w, 180)
 
+# ╔═╡ 0699a9e9-c620-4456-8da7-630dee22441d
+ispalindrome(f::Factor) = ispalindrome(f.content)
+
+# ╔═╡ b259b15b-c3db-4d59-b11a-618868dbf698
+ispalindrome(n::Nothing) = true
+
 # ╔═╡ 4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
 @test ispalindrome("urdlldru")
 
@@ -1413,11 +1419,62 @@ md"""
 # ╔═╡ aec03332-7823-4a88-aa1c-5d8ef8ce69da
 is90drome(w::String) = isΘdrome(w, 90)
 
+# ╔═╡ 1bc65291-fb75-4b3c-8db9-5816d21484af
+is90drome(f::Factor) = isΘdrome(f.content, 90)
+
 # ╔═╡ d30021de-db76-4e58-bb3f-be466f927cd5
 @test is90drome("urrddr")
 
-# ╔═╡ 19d1ff0d-80c7-4060-88e7-707ab293fbbd
-function quarter_turn(w::String)::Union{BWFactorization, Nothing}
+# ╔═╡ 1d446a2c-cf62-40b9-a01a-b05925f560d6
+function quarter_turn_transformations(word::String, fact::Factorization)
+	[
+		(pts -> begin
+			θ = fact[1] |> ispalindrome ? 180 : 90
+			r = rotate(pts, θ; first_idx = fact[1].start)
+			te = pts[fact[2].start] .- pts[fact[1].start]
+			translate(r, te)
+		end),
+		(pts -> begin
+			r = rotate(pts, 90; first_idx = fact[2].start)
+			te = pts[fact[mod1(3, length(fact))].start] .- pts[fact[2].start]
+			translate(r, te)
+		end),
+	]
+end
+
+# ╔═╡ 9a6dde68-8b7d-4fec-9f18-5e03abb78e06
+"""
+Version with only two of three factors (one being empty).
+"""
+function quarter_turn_2(w::String)::Union{BWFactorization, Nothing}
+	l = length(w)
+	s(i) = mod1(i, l)
+	
+	for A_start ∈ 1:l
+		for B_start ∈ A_start+1:A_start+l-1
+			A = factor(w, A_start, s(B_start-1))
+			B = factor(w, s(B_start), s(A_start+l-1))
+
+			if (A |> ispalindrome || A |> is90drome) && B |> is90drome
+				return BWFactorization(
+					[A, B],
+					QuarterTurn
+				)
+			end
+		end
+	end
+	
+	nothing
+end
+
+# ╔═╡ 40f2194b-264b-4d6b-8006-3a0bd3f82c6c
+@test !(quarter_turn_2("rrrrrdddddlldlulluuruluu") |> isnothing)
+
+# ╔═╡ 3d500ecf-281f-4f54-8848-90cb7bd21d23
+"""
+Version with the three factors (none is empty).
+"""
+function quarter_turn_3(w::String)::Union{BWFactorization, Nothing}
 	l = length(w)
 	s(i) = mod1(i, l)
 	
@@ -1425,13 +1482,13 @@ function quarter_turn(w::String)::Union{BWFactorization, Nothing}
 
 		for B_start ∈ A_start+1:A_start+l-1-1
 			A = factor(w, A_start, s(B_start-1))
-			if A.content |> ispalindrome
+			if A |> ispalindrome
 
 				for C_start ∈ B_start+1:A_start+l-1
 					B = factor(w, s(B_start), s(C_start-1))
 					C = factor(w, s(C_start), s(A_start+l-1))
 
-					if B.content |> is90drome && C.content |> is90drome
+					if B |> is90drome && C |> is90drome
 						return BWFactorization(
 							[A, B, C],
 							QuarterTurn
@@ -1445,24 +1502,13 @@ function quarter_turn(w::String)::Union{BWFactorization, Nothing}
 	nothing
 end
 
-# ╔═╡ 1d406b44-350e-41b6-92e7-ab7eb406b0be
-@test !(quarter_turn("druuurddrurrddrdlldrrrdlddrdldluldluullurullurulluur") |> isnothing)
-
-# ╔═╡ 1d446a2c-cf62-40b9-a01a-b05925f560d6
-function quarter_turn_transformations(word::String, fact::Factorization)
-	[
-		(pts -> begin
-			r = rotate(pts, 180; first_idx = fact[1].start)
-			te = pts[fact[2].start] .- pts[fact[1].start]
-			translate(r, te)
-		end),
-		(pts -> begin
-			r = rotate(pts, 90; first_idx = fact[2].start)
-			te = pts[fact[3].start] .- pts[fact[2].start]
-			translate(r, te)
-		end),
-	]
+# ╔═╡ 19d1ff0d-80c7-4060-88e7-707ab293fbbd
+function quarter_turn(w::String)::Union{BWFactorization, Nothing}
+	getfirst(!isnothing, [quarter_turn_2(w), quarter_turn_3(w)])
 end
+
+# ╔═╡ 1d406b44-350e-41b6-92e7-ab7eb406b0be
+@test !(quarter_turn_3("druuurddrurrddrdlldrrrdlddrdldluldluullurullurulluur") |> isnothing)
 
 # ╔═╡ 0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 md"""
@@ -1697,23 +1743,6 @@ function type_one_half_turn_reflection(w::String)
 	nothing
 end
 
-# ╔═╡ 8665a82d-69ac-4a6b-aac5-20b333e5026d
-function anyfactorization(w::String)
-	getfirst(
-		(!isnothing),
-		map(
-			f -> f(w),
-			[
-				bn_factorization,
-				half_turn,
-				type_one_reflection,
-				type_two_reflection,
-				type_one_half_turn_reflection
-			]
-		)
-	)
-end
-
 # ╔═╡ 112ad530-59ce-44d7-ae85-adc0b44286b1
 @test !(type_one_half_turn_reflection("urrdrrdlddlddldrrrrdldllulldlullurrululurrullururr") |> isnothing)
 
@@ -1821,6 +1850,43 @@ end
 # ╔═╡ 62e08347-baa0-44d4-8b06-84463813e498
 ad_factorization = factorize(ad_boundaryword, factorize_method)
 
+# ╔═╡ 7ff92923-ff57-4411-8301-40cf013dbaa1
+function anyfactorization(w::String)
+	[
+		Translation,
+		HalfTurn,
+		QuarterTurn,
+		TypeOneReflection,
+		TypeTwoReflection,
+		TypeOneHalfTurnReflection,
+		TypeTwoHalfTurnReflection
+	] .|> (t -> factorize(w, t)) |> (f -> getfirst(!isnothing, f))
+end
+
+# ╔═╡ 56983584-7a5c-4792-a065-44af56e8f7dc
+factorization = anyfactorization(boundary_word)
+
+# ╔═╡ 7b9d22c3-c2de-40d8-b268-194adee6b58c
+if ismissing(boundary_word) || isnothing(boundary_word) || isempty(boundary_word)
+	Markdown.MD(Markdown.Admonition(
+		"info",
+		"No polyomino to work with",
+		[md"Enter a valid polyomino to see whether it can tile the plane!"]
+	))
+elseif isnothing(factorization)
+	Markdown.MD(Markdown.Admonition(
+		"warning",
+		"Tiling doesn’t exist",
+		[md"There exists no isohedral tiling with this polyomino. Try another one!"]
+	))
+else
+	Markdown.MD(Markdown.Admonition(
+		"success",
+		"Tiling exists",
+		[md"An isohedral tiling with this polyomino exists, congratulations! Try another one!"]
+	))
+end
+
 # ╔═╡ dd51011f-25e6-4a9a-bdc5-1710a3db8647
 @test type_two_half_turn_reflection("drdrdllddrurddddlllddldluurulluulluurdruurdruulurrur") |> !isnothing
 
@@ -1921,47 +1987,20 @@ ad_tiling = (ad_tilepolygons
 	
 	""")
 
-# ╔═╡ 9bafd58c-14db-496b-a25c-c4ee3cf2a66f
-begin
-	if isempty(boundary_word)
-		factorization = nothing
-		transforms = nothing
-		tiling = []
-	else
-		factorization = anyfactorization(boundary_word)
-		
-		if factorization |> !isnothing
-			transforms = transformations(boundary_word, factorization)
-			tile_polygons = generate_tiling(boundary_word, 15, transforms)
-			tiling = map(poly -> translate(poly, (xpan, ypan)), scale.(tile_polygons, UNIT))
-		else
-			transforms = nothing
-			tiling = []
-		end
-	end
-	nothing
-end
+# ╔═╡ 3c17a506-20c2-44dc-a786-399554523483
+transforms = transformations(boundary_word, factorization)
 
-# ╔═╡ 7b9d22c3-c2de-40d8-b268-194adee6b58c
-if ismissing(boundary_word) || isnothing(boundary_word) || isempty(boundary_word)
-	Markdown.MD(Markdown.Admonition(
-		"info",
-		"No polyomino to work with",
-		[md"Enter a valid polyomino to see whether it can tile the plane!"]
-	))
-elseif isnothing(factorization)
-	Markdown.MD(Markdown.Admonition(
-		"warning",
-		"Tiling doesn’t exist",
-		[md"There exists no isohedral tiling with this polyomino. Try another one!"]
-	))
-else
-	Markdown.MD(Markdown.Admonition(
-		"success",
-		"Tiling exists",
-		[md"An isohedral tiling with this polyomino exists, congratulations! Try another one!"]
-	))
-end
+# ╔═╡ 1507744e-f8ca-4d68-bb89-34dbe237b987
+tile_polygons = generate_tiling(
+	boundary_word,
+	(PLANE_WIN_X ÷ MIN_SQ_UNIT, PLANE_WIN_Y ÷ MIN_SQ_UNIT),
+	transforms
+)
+
+# ╔═╡ 49150d59-b330-4eb9-8fc0-2236d253bd3b
+tiling = (tile_polygons
+	.|> (p -> scale(p, UNIT))
+	.|> (p -> translate(p, (PLANE_WIN_X ÷ 2, PLANE_WIN_Y ÷ 2))))
 
 # ╔═╡ d963c97a-d24f-4ff0-a3d8-c810e1f55b6c
 
@@ -2348,7 +2387,6 @@ version = "17.4.0+0"
 # ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
 # ╟─a40114c7-9d06-4dfc-89c6-139955befb24
 # ╟─c32cff12-157e-42d7-a827-9a5760d44d8c
-# ╟─76061728-334e-4543-8d54-83520c3db87b
 # ╟─2f74f271-3f59-4edc-bc7a-0a950cb24bd7
 # ╟─2e92baef-efe4-4355-93a8-1c3797e17ece
 # ╟─c699b23f-2341-4a07-9d72-ff85585110f4
@@ -2359,10 +2397,14 @@ version = "17.4.0+0"
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
-# ╠═77a355a2-7591-4d18-955b-bbf6c7e19dda
-# ╠═9bafd58c-14db-496b-a25c-c4ee3cf2a66f
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
-# ╠═8665a82d-69ac-4a6b-aac5-20b333e5026d
+# ╠═77a355a2-7591-4d18-955b-bbf6c7e19dda
+# ╟─56983584-7a5c-4792-a065-44af56e8f7dc
+# ╟─3c17a506-20c2-44dc-a786-399554523483
+# ╟─1507744e-f8ca-4d68-bb89-34dbe237b987
+# ╟─49150d59-b330-4eb9-8fc0-2236d253bd3b
+# ╟─7ff92923-ff57-4411-8301-40cf013dbaa1
+# ╟─76061728-334e-4543-8d54-83520c3db87b
 # ╟─5bd78da2-2445-4846-9b03-640f27917895
 # ╟─8d359a24-7b62-4ead-b3ff-5c3fc8f3da32
 # ╟─18389ab9-4fc4-49f4-9bc9-b855b7c16232
@@ -2439,16 +2481,22 @@ version = "17.4.0+0"
 # ╟─eb67c8bf-b5ac-4508-bdd8-88c0d01101f3
 # ╟─a278b48b-a695-4ebe-a48b-5ce251fab378
 # ╟─b02c5236-bc24-40ab-b452-3b3e61853016
+# ╟─0699a9e9-c620-4456-8da7-630dee22441d
+# ╟─b259b15b-c3db-4d59-b11a-618868dbf698
 # ╟─4574f1dd-2eeb-4b76-93fe-f36d2bf1172e
 # ╟─8c8cab8e-2922-4f39-8614-c9b45266ff9f
 # ╟─2cea2c5c-3942-473c-a231-0d4450346bf6
 # ╟─1e6d83b3-de76-41c4-92f9-000e25670dbb
 # ╟─8c141949-4bf2-45ed-bf65-c033a3039e2b
 # ╟─aec03332-7823-4a88-aa1c-5d8ef8ce69da
+# ╟─1bc65291-fb75-4b3c-8db9-5816d21484af
 # ╟─d30021de-db76-4e58-bb3f-be466f927cd5
 # ╟─19d1ff0d-80c7-4060-88e7-707ab293fbbd
-# ╟─1d406b44-350e-41b6-92e7-ab7eb406b0be
 # ╟─1d446a2c-cf62-40b9-a01a-b05925f560d6
+# ╟─9a6dde68-8b7d-4fec-9f18-5e03abb78e06
+# ╟─40f2194b-264b-4d6b-8006-3a0bd3f82c6c
+# ╟─3d500ecf-281f-4f54-8848-90cb7bd21d23
+# ╟─1d406b44-350e-41b6-92e7-ab7eb406b0be
 # ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 # ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
 # ╟─a4092512-3cf2-4e1f-9ef3-188a7151b0a4
