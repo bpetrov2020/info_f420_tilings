@@ -573,10 +573,10 @@ With this in mind, here are the 7 factorizations that induce a tiling:
 - Translation: $ABC\hat{A}\hat{B}\hat{C}$
 - Half-Turn: $ABC\hat{A}DE$ with $B$, $C$, $D$, $E$ palindromes
 - Quarter-Turn: $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes
-- Type-1 Reflection: 
-- Type-2 Reflection:
-- Type-1 Half-Turn-Reflection:
-- Type-2 Half-Turn-Reflection:
+- Type-1 Reflection: $ABf_Θ(B)\hat{A}Cf_Φ(C)$ for some $Θ$, $Φ$
+- Type-2 Reflection: $ABC\hat{A}f_Θ(C)f_Θ(B)$
+- Type-1 Half-Turn-Reflection: $ABC\hat{A}Df_Θ(D)$ with $B$, $C$ palindromes
+- Type-2 Half-Turn-Reflection: $ABCDf_Θ(B)f_Φ(D)$ with $A$, $C$ palindromes and $Θ - Φ = ±90°$
 """
 
 # ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
@@ -594,7 +594,7 @@ PLANE_WIN_X = 700
 PLANE_WIN_Y = 300
 
 # ╔═╡ c699b23f-2341-4a07-9d72-ff85585110f4
-MIN_SQ_UNIT = 10
+MIN_SQ_UNIT = 8
 
 # ╔═╡ c32cff12-157e-42d7-a827-9a5760d44d8c
 md"""
