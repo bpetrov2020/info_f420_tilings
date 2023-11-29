@@ -598,6 +598,23 @@ With this in mind, here are the 7 factorizations that induce a tiling:
 - Type-2 Half-Turn-Reflection: $ABCDf_Θ(B)f_Φ(D)$ with $A$, $C$ palindromes and $Θ - Φ = ±90°$
 """
 
+# ╔═╡ 4409958c-8e80-43d5-9758-6a192b9e5a9a
+md"""
+#### Complexity
+"""
+
+# ╔═╡ b9e76e3f-9831-4b04-8870-29605561d189
+md"""
+A simple and straightforward algorithm to find a suitable factorization would be a brute force algorithm trying all possible factorizations and checking whether they satisfy the constraints. We could improve the algorithm by introducing pruning and not going down a path if the first constraints are not satisfied. For example, for the _Quarter Turn_, when trying a specific $A$, we would not continue if it is not a palindrome. However, this doesn’t reduce the worst case complexity that is still $𝓞(n^6)$, as it is usually the case with such kinds of algorithms. 
+"""
+
+# ╔═╡ 6e95928e-b683-45e6-a4cc-9046420a6166
+md"""
+The main result of the studied paper however claims that we could decide whether one of these factorizations is possible in quasi-linear time, that is in $𝓞(n \log n)$. Instead of trying all factorizations, it uses various structural results on words, considering them as only strings of characters and not specifically as polyomino boundaries.
+
+The notions used are however quite complex to grasp and understand. Instead of going into the details and basically copying the paper, we will give a higher level overview and try to build an intuition instead. We refer the reader interested in all the intermediary results and proofs to the original paper.
+"""
+
 # ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
 md"""
 ## Advanced Interactive Showcase
@@ -613,7 +630,7 @@ PLANE_WIN_X = 700
 PLANE_WIN_Y = 300
 
 # ╔═╡ c699b23f-2341-4a07-9d72-ff85585110f4
-MIN_SQ_UNIT = 8
+MIN_SQ_UNIT = 10
 
 # ╔═╡ 2bb6b38f-c1be-431e-a383-aa3604148c54
 md"""
@@ -2382,6 +2399,9 @@ version = "17.4.0+0"
 # ╟─0f69ef6a-831f-4dfe-b755-4016a9e2dd65
 # ╟─177c821a-a75b-44f7-a15e-9dfc061556aa
 # ╟─2139c37b-422d-4524-9bf8-e59dbfa105fc
+# ╟─4409958c-8e80-43d5-9758-6a192b9e5a9a
+# ╟─b9e76e3f-9831-4b04-8870-29605561d189
+# ╟─6e95928e-b683-45e6-a4cc-9046420a6166
 # ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
 # ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
 # ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
@@ -2389,7 +2409,7 @@ version = "17.4.0+0"
 # ╟─c32cff12-157e-42d7-a827-9a5760d44d8c
 # ╟─2f74f271-3f59-4edc-bc7a-0a950cb24bd7
 # ╟─2e92baef-efe4-4355-93a8-1c3797e17ece
-# ╟─c699b23f-2341-4a07-9d72-ff85585110f4
+# ╠═c699b23f-2341-4a07-9d72-ff85585110f4
 # ╟─62e08347-baa0-44d4-8b06-84463813e498
 # ╟─f1d74824-2a73-45fb-a4dd-681e4e5991ac
 # ╟─762d2fc3-7c40-4505-8f87-4a0688d6e206
