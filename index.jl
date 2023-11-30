@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.26
+# v0.19.32
 
 using Markdown
 using InteractiveUtils
@@ -613,6 +613,121 @@ md"""
 The main result of the studied paper however claims that we could decide whether one of these factorizations is possible in quasi-linear time, that is in $𝓞(n \log n)$. Instead of trying all factorizations, it uses various structural results on words, considering them as only strings of characters and not specifically as polyomino boundaries.
 
 The notions used are however quite complex to grasp and understand. Instead of going into the details and basically copying the paper, we will give a higher level overview and try to build an intuition instead. We refer the reader interested in all the intermediary results and proofs to the original paper.
+"""
+
+# ╔═╡ 80d8f2a2-55f0-4261-8d73-0a6e454935fc
+md"""
+### Overview of the Algorithms
+"""
+
+# ╔═╡ 79c1576d-db49-4e39-acbb-cbd2f61b85fe
+md"""
+##### Translation
+"""
+
+# ╔═╡ 2ee34268-6af8-4a67-b26f-16f29e45fc05
+md"""
+TODO
+"""
+
+# ╔═╡ 2d6d103f-e454-4c60-b35c-709d9ae5131b
+md"""
+##### Half-Turn
+"""
+
+# ╔═╡ 9193a413-38e4-4714-8472-27cd24667505
+md"""
+TODO
+"""
+
+# ╔═╡ 06bdb6ac-20ca-4b8c-881c-29ce38176f47
+md"""
+##### Quarter-Turn
+"""
+
+# ╔═╡ a0bb1aa7-ae77-4964-94dd-109ba4134824
+md"""
+The quarter-turn factorization is defined as such:
+
+>A quarter-turn factorization of a boundary word $W$ has the form:                            $W$ = $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes.
+
+The claim for this factorization is:
+>Let $P$ be a polyomino with |$𝑩$($P$)| = n. It can be decided in $O$(n) time if $B$($P$) has a quarter-turn factorization.
+
+The approach of the algorithm is to find factorizations with long palindrome or 90-drome factors separately by guessing the 90-drome factors, given either a long 90-drome factor or the location of the first or last letter of a long palindrome factor.
+
+In this case, it was found that, by pigeonhole principle, a quarter-turn factorization has at least one long factor of length at least |$W$|/3.
+
+In order to achieve this in linear time we first need to do some preprocess of $W$.
+For each letter $i$ in the word $W$, we need to compute a lenght-sorted lists of all admissible:
+
+- 90-dromes that start at W[$i$]
+- 90-dromes that end at W[$i$]
+- Palindromes with center W[$i$] 
+
+>Note:These lists can all be computed in O(|$W$|) time and are structured such that the longest palindrome for each center can be found in O(1) time. It is also proven that, there are $O$(1) long 90-dromes, the long palidromes can be summerized by a $O$(1)-sized set of letters and for any letter and that there are $O$($log$|$W$|) 90-drome factors that start (or end) at the letter, and thus $O$($log^2$ |$W$|) double 90-drome factors that start (or end) at the letter.
+
+To find the factorizations starting from a long 90-drome, we scan through the lists we computed before and extract the $O$(1) long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
+We then have an induced factorization $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorizations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $O$($log^2(W)$) time.
+
+To find the factorizations startinng from a long palindrome, we first build, similarily to the first search, the double admissible 90-dromes $D_1D_2$ starting at $W$[$i$ + 1] with i either the fisrst or last letter of a long palindrome.
+This again induces a factorization $W$ = $AD_1D_2$ (including |$D_2$| = 0) and we can check if $A$ is a long palindrome.
+Then we repeat the process for $D_1D_2$ ending at $W$[$i$ - 1].
+
+All these operations take a maximum of $O$($log^3(W)$) time.
+The total time complexity is thus well $O$(n).
+"""
+
+
+# ╔═╡ 2d0cebb6-9647-4b0b-8a96-41cbe4ea26f7
+md"""
+##### Type-1 Reflection
+"""
+
+# ╔═╡ 30027b5d-704b-4433-855d-daf2673af32b
+md"""
+TODO
+"""
+
+# ╔═╡ aa7b9d69-16a0-4e05-96ff-b9ae75d27af7
+md"""
+##### Type-2 Reflection
+"""
+
+# ╔═╡ e99222de-2cde-4b7d-8b7f-5a23c95ca611
+md"""
+The type-2 Reflection factorization is defined as such:
+
+> A type-2 reflection factorization of a boundary word $W$ has the form:  $W$=$ABCCÂf_Θ(C)f_Θ(B)$ for some $Θ$.
+
+The claim for this factorization is:
+>Let P be a polyomino with |$𝑩$($P$)| = n. It can be decided in $O$(n) time if $𝑩(P)$ has a type-2 reflection factorization.
+
+The algorithm is divided in two cases, this is because we can say that, for a type-2 reflection factorization, without loss of generality, either |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6. Thus, we have 1 case for each |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6.
+
+**Case 1: |A| ≥ |W |/6:**
+
+
+"""
+
+# ╔═╡ 6622dd9f-7b79-4fd6-9b86-440e27c7c420
+md"""
+##### Type-1 Half-Turn-Reflection
+"""
+
+# ╔═╡ 83dcf30d-c01f-4dbb-9d42-1aa0ab517e5c
+md"""
+TODO
+"""
+
+# ╔═╡ 44c4f097-cc65-4a44-9a3c-f201545904a4
+md"""
+##### Type-2 Half-Turn-Reflection
+"""
+
+# ╔═╡ 195c6eb6-2479-4e3a-9a3f-7533ead36eb4
+md"""
+TODO
 """
 
 # ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
@@ -2104,7 +2219,7 @@ PlutoUI = "~0.7.52"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.4"
+julia_version = "1.9.3"
 manifest_format = "2.0"
 project_hash = "1d21cefe31ea90f587d2d2e16ab29c4b55dd4464"
 
@@ -2184,12 +2299,12 @@ version = "0.21.4"
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.6.4"
+version = "0.6.3"
 
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "8.4.0+0"
+version = "7.84.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -2198,7 +2313,7 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 [[deps.LibSSH2_jll]]
 deps = ["Artifacts", "Libdl", "MbedTLS_jll"]
 uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
-version = "1.11.0+1"
+version = "1.10.2+0"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -2360,7 +2475,7 @@ version = "5.8.0+0"
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.52.0+1"
+version = "1.48.0+0"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -2402,6 +2517,21 @@ version = "17.4.0+0"
 # ╟─4409958c-8e80-43d5-9758-6a192b9e5a9a
 # ╟─b9e76e3f-9831-4b04-8870-29605561d189
 # ╟─6e95928e-b683-45e6-a4cc-9046420a6166
+# ╟─80d8f2a2-55f0-4261-8d73-0a6e454935fc
+# ╟─79c1576d-db49-4e39-acbb-cbd2f61b85fe
+# ╟─2ee34268-6af8-4a67-b26f-16f29e45fc05
+# ╟─2d6d103f-e454-4c60-b35c-709d9ae5131b
+# ╟─9193a413-38e4-4714-8472-27cd24667505
+# ╟─06bdb6ac-20ca-4b8c-881c-29ce38176f47
+# ╟─a0bb1aa7-ae77-4964-94dd-109ba4134824
+# ╟─2d0cebb6-9647-4b0b-8a96-41cbe4ea26f7
+# ╟─30027b5d-704b-4433-855d-daf2673af32b
+# ╟─aa7b9d69-16a0-4e05-96ff-b9ae75d27af7
+# ╟─e99222de-2cde-4b7d-8b7f-5a23c95ca611
+# ╟─6622dd9f-7b79-4fd6-9b86-440e27c7c420
+# ╟─83dcf30d-c01f-4dbb-9d42-1aa0ab517e5c
+# ╟─44c4f097-cc65-4a44-9a3c-f201545904a4
+# ╟─195c6eb6-2479-4e3a-9a3f-7533ead36eb4
 # ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
 # ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
 # ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
@@ -2419,7 +2549,7 @@ version = "17.4.0+0"
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
 # ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
 # ╠═77a355a2-7591-4d18-955b-bbf6c7e19dda
-# ╟─56983584-7a5c-4792-a065-44af56e8f7dc
+# ╠═56983584-7a5c-4792-a065-44af56e8f7dc
 # ╟─3c17a506-20c2-44dc-a786-399554523483
 # ╟─1507744e-f8ca-4d68-bb89-34dbe237b987
 # ╟─49150d59-b330-4eb9-8fc0-2236d253bd3b
@@ -2512,10 +2642,10 @@ version = "17.4.0+0"
 # ╟─1bc65291-fb75-4b3c-8db9-5816d21484af
 # ╟─d30021de-db76-4e58-bb3f-be466f927cd5
 # ╟─19d1ff0d-80c7-4060-88e7-707ab293fbbd
-# ╟─1d446a2c-cf62-40b9-a01a-b05925f560d6
-# ╟─9a6dde68-8b7d-4fec-9f18-5e03abb78e06
+# ╠═1d446a2c-cf62-40b9-a01a-b05925f560d6
+# ╠═9a6dde68-8b7d-4fec-9f18-5e03abb78e06
 # ╟─40f2194b-264b-4d6b-8006-3a0bd3f82c6c
-# ╟─3d500ecf-281f-4f54-8848-90cb7bd21d23
+# ╠═3d500ecf-281f-4f54-8848-90cb7bd21d23
 # ╟─1d406b44-350e-41b6-92e7-ab7eb406b0be
 # ╟─0b42e3a0-b10c-45cc-a71d-bc02a4d700cc
 # ╟─1b70eda1-8aaa-4415-96a0-dfa042f8b536
