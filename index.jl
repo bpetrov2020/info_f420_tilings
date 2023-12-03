@@ -527,7 +527,7 @@ The following example shows a surrounding that leaves no gaps, yet doesn’t pro
 """
 
 # ╔═╡ 81196bee-bee2-4788-bf5f-3f60f7e668df
-PlutoUI.LocalResource("./res/surround_bad.svg", :height => 200, :width=>"100%")
+PlutoUI.Resource("https://private-user-images.githubusercontent.com/76966354/287546631-61079653-829b-4469-95f8-2d78232361bb.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDE2MzUwNjAsIm5iZiI6MTcwMTYzNDc2MCwicGF0aCI6Ii83Njk2NjM1NC8yODc1NDY2MzEtNjEwNzk2NTMtODI5Yi00NDY5LTk1ZjgtMmQ3ODIzMjM2MWJiLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEyMDMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMjAzVDIwMTkyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWQ0ODNkMzFjNTY2NWNhNGE2OThlMTdhYjgyZmNmYTZkMzIwOTkxYzIzMmRkYTlhMDg0ZmFhMGI0ZTVkMWViYTYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.F231qa_GVgSQtfhvR5NGfkZz1zT_MwG_K0-XjsO01uY", :height => 200, :width=>"100%")
 
 # ╔═╡ 9e4e8ab1-dd18-4bc2-baac-9daece06905a
 md"""
@@ -547,7 +547,7 @@ The alphabet would be $Σ = \{r, u, l, d\}$ for the four directions (right, up, 
 """
 
 # ╔═╡ 8c471070-7629-4957-821f-61b50d52e936
-PlutoUI.LocalResource("./res/boundary_word.svg", :height => 200, :width=>"100%")
+PlutoUI.Resource("https://private-user-images.githubusercontent.com/76966354/287546611-b3d76c5e-bb38-4a62-b5cc-cf327cd3d54c.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDE2MzUwNjAsIm5iZiI6MTcwMTYzNDc2MCwicGF0aCI6Ii83Njk2NjM1NC8yODc1NDY2MTEtYjNkNzZjNWUtYmIzOC00YTYyLWI1Y2MtY2YzMjdjZDNkNTRjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEyMDMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMjAzVDIwMTkyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWFiZDQyNzkxNWJjZDE0Yzk2Nzk3ZDI3MzA0NzUwYzRlYjI3MjNhNTE5MWYyNTgxZjIxYWYwNjY4ZDNjMDdmMGEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.n-jSgzTtYvnubduB053EACK9ETRcupgflViHWyxFDzM", :height => 200, :width=>"100%")
 
 # ╔═╡ 917a93f6-153f-4eac-a740-04ee407a21a6
 md"""
@@ -575,16 +575,16 @@ Similarly, a word is a 90-drome if we can split it in two and the second half is
 """
 
 # ╔═╡ 67a35fa9-b56a-467a-a0c7-126832af1b1c
-PlutoUI.LocalResource("res/90drome.svg", :width => "100%")
+PlutoUI.Resource("https://private-user-images.githubusercontent.com/76966354/287546461-94c5f665-33aa-4dc6-a2b3-e8bd3e85d776.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDE2MzUwNjAsIm5iZiI6MTcwMTYzNDc2MCwicGF0aCI6Ii83Njk2NjM1NC8yODc1NDY0NjEtOTRjNWY2NjUtMzNhYS00ZGM2LWEyYjMtZThiZDNlODVkNzc2LnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEyMDMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMjAzVDIwMTkyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY3YzBkZmZkZjU3ZTgyOWMyOGRlNDhiMzdhMWU5MDcwZWQ1NDJhMWI5MGJlYzk5OGJjMWE0NGFjNmE1MGE1NTgmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.q4dWbQwOXUBgUGa9lOcEgAhJ6itxqxeIuAM0Py5bTDA", :width => "100%")
 
 # ╔═╡ 0f69ef6a-831f-4dfe-b755-4016a9e2dd65
 md"""
-Lastly, the reflection of a word $W$ by $Θ°$, written $f_Θ(W)$ is the result of reflecting each of its letters across a line with angle Θ° from the x-axis. As with the 90-drome, it is better understood with an example. Both words below are a 45° reflection of each other:
+Lastly, the reflection of a word $W$ by $Θ°$, written $f_Θ(W)$, is the result of reflecting each of its letters across a line with angle Θ° from the x-axis. As with the 90-drome, it is better understood with an example. Both words below are a 45° reflection of each other:
 
 """
 
 # ╔═╡ 177c821a-a75b-44f7-a15e-9dfc061556aa
-PlutoUI.LocalResource("res/reflection.svg", :width => "100%", :height => "250")
+PlutoUI.Resource("https://private-user-images.githubusercontent.com/76966354/287546664-09805028-ff7f-49b5-977c-94eb96b7d3fc.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDE2MzUwNjAsIm5iZiI6MTcwMTYzNDc2MCwicGF0aCI6Ii83Njk2NjM1NC8yODc1NDY2NjQtMDk4MDUwMjgtZmY3Zi00OWI1LTk3N2MtOTRlYjk2YjdkM2ZjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEyMDMlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMjAzVDIwMTkyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPThlOWY5N2Y0ZjUyNjBjYjAwM2VmNjExODU3ZTEwMmUzNzdmZDBiNmIzZGMyOGNjMDVlZjg4OGY3YTNhMTNjZmUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.IYGGRrlI98p24isWCGRKQ7yTy8ejoDhCrS2M0U0i1PU", :width => "100%", :height => "250")
 
 # ╔═╡ 2139c37b-422d-4524-9bf8-e59dbfa105fc
 md"""
