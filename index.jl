@@ -241,6 +241,7 @@ md"""
 	const editBtn = document.getElementById('edit-btn');
 	const resetBtn = document.getElementById('reset-btn');
 	var btns = document.querySelectorAll('.button');
+	var sizeOfBoundary = -1;
 
 	editBtn.disabled = true;
 
@@ -289,7 +290,7 @@ md"""
 		return [startBtnIdx, rotate];
 	}
 
-	function generateBoundaryWord(sizeOfBoundary) {
+	function generateBoundaryWord() {
 		let border = ['left', 'top', 'right', 'bottom'];
 		let letters = ['u', 'r', 'd', 'l'];
 		let shifts = [-1, -10, 1, 10];
@@ -461,11 +462,12 @@ md"""
 			span.dispatchEvent(new CustomEvent("input"));
 			return;
 		}
-		let sizeOfBoundary = getSizeOfBoundary();
-		let bw = generateBoundaryWord(sizeOfBoundary);
+		sizeOfBoundary = getSizeOfBoundary();
+		let bw = generateBoundaryWord();
 		if ( bw !== null) {
 			// Sending the BoundaryWord back to pluto
 			span.value = bw;
+			console.log(span.value);
 			span.dispatchEvent(new CustomEvent("input"));
 			fillPolyomino(true);
 			disableGrid(true);
@@ -652,7 +654,7 @@ The quarter-turn factorization is defined as such:
 >A quarter-turn factorization of a boundary word $W$ has the form:                            $W$ = $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes.
 
 The claim for this factorization is:
->Let $P$ be a polyomino with |$𝑩$($P$)| = n. It can be decided in $O$(n) time if $B$($P$) has a quarter-turn factorization.
+>Let $P$ be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $B$($P$) has a quarter-turn factorization.
 
 The approach of the algorithm is to find factorizations with long palindrome or 90-drome factors separately by guessing the 90-drome factors, given either a long 90-drome factor or the location of the first or last letter of a long palindrome factor.
 
@@ -665,17 +667,17 @@ For each letter $i$ in the word $W$, we need to compute a lenght-sorted lists of
 - 90-dromes that end at W[$i$]
 - Palindromes with center W[$i$] 
 
->Note:These lists can all be computed in O(|$W$|) time and are structured such that the longest palindrome for each center can be found in O(1) time. It is also proven that, there are $O$(1) long 90-dromes, the long palidromes can be summerized by a $O$(1)-sized set of letters and for any letter and that there are $O$($log$|$W$|) 90-drome factors that start (or end) at the letter, and thus $O$($log^2$ |$W$|) double 90-drome factors that start (or end) at the letter.
+>Note:These lists can all be computed in $𝓞$(|$W$|) time and are structured such that the longest palindrome for each center can be found in $𝓞$(1) time. It is also proven that, there are $𝓞$(1) long 90-dromes, the long palidromes can be summerized by a $𝓞$(1)-sized set of letters and for any letter and that there are $𝓞$($log$|$W$|) 90-drome factors that start (or end) at the letter, and thus $𝓞$($log^2$ |$W$|) double 90-drome factors that start (or end) at the letter.
 
-To find the factorizations starting from a long 90-drome, we scan through the lists we computed before and extract the $O$(1) long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
-We then have an induced factorization $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorizations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $O$($log^2(W)$) time.
+To find the factorizations starting from a long 90-drome, we scan through the lists we computed before and extract the $𝓞$(1) long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
+We then have an induced factorization $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorizations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $𝓞$($log^2(W)$) time.
 
 To find the factorizations startinng from a long palindrome, we first build, similarily to the first search, the double admissible 90-dromes $D_1D_2$ starting at $W$[$i$ + 1] with i either the fisrst or last letter of a long palindrome.
 This again induces a factorization $W$ = $AD_1D_2$ (including |$D_2$| = 0) and we can check if $A$ is a long palindrome.
 Then we repeat the process for $D_1D_2$ ending at $W$[$i$ - 1].
 
-All these operations take a maximum of $O$($log^3(W)$) time.
-The total time complexity is thus well $O$(n).
+All these operations take a maximum of $𝓞$($log^3(W)$) time.
+The total time complexity is thus well $𝓞$(n).
 """
 
 
@@ -701,12 +703,19 @@ The type-2 Reflection factorization is defined as such:
 > A type-2 reflection factorization of a boundary word $W$ has the form:  $W$=$ABCCÂf_Θ(C)f_Θ(B)$ for some $Θ$.
 
 The claim for this factorization is:
->Let P be a polyomino with |$𝑩$($P$)| = n. It can be decided in $O$(n) time if $𝑩(P)$ has a type-2 reflection factorization.
+>Let P be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $𝑩(P)$ has a type-2 reflection factorization.
 
 The algorithm is divided in two cases, this is because we can say that, for a type-2 reflection factorization, without loss of generality, either |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6. Thus, we have 1 case for each |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6.
 
-**Case 1: |A| ≥ |W |/6:**
+**Case 1: |$A$| $≥$ |$W$|/6:**
+In that case $A$ and $Â$ are admissible, the fisrt step consist in computing all admissible factor A, the we compute the set $F$ of all factors for wich every $A$ with |$A$| ≥ |W |/6 is an affix factor of element of $F$ ($𝓞(|W|)$ time).
 
+We then take the Factors in $F$ and try to Guess $B$ and $f_Θ(B)$, the candidates are the longest common suffixes of $X$ and $Y$ with $F=XY$ and |$Y$| = $±|X|$, Then we compare the prefixes from $X$ and $Y$, it should be $A$ and $Â$ the remainig words before and after $Â$ should be $C$ and $f_Θ(C)$
+
+**Case 2: |$B$| $≥$ |$W$|/6:**
+Here the trick is to guess pairs of $B$ and $f_Θ(B)$ and then apply the same reasonning as the first case.
+
+Each case can be done in $𝓞(|W|)$, thus linear, time.
 
 """
 
@@ -727,7 +736,27 @@ md"""
 
 # ╔═╡ 195c6eb6-2479-4e3a-9a3f-7533ead36eb4
 md"""
-TODO
+The type-2 Reflection factorization is defined as such:
+
+> A type-2 half-turn-reflection factorization of a boundary word $W$ has the form: $W = ABCDfΘ(B)fΦ(D)$ with $A$, $C$ palindromes and $Θ◦ −Φ◦ = ±90◦$.
+
+The claim for this factorization is:
+>Let P be a polyomino with |B(P )| = n. It can be decided in $𝓞(n log n)$ time if $B(P)$ has a type-2 half-turn-reflection factorization.
+
+Knowing that, without loss of generality, an element from {$A, B, C, D$} has length at least |$W$|/6. And the cases of $A$ and $C$ are symmetric there are 3 cases to be handled by the algorithm.
+
+**Case 1: |$B$| $≥$ |$W$|/6:**
+Here we first comupte a set of all pairs of $B$ and $f_Θ(B)$ ($𝓞(|W|)$ size), then determinig if each pair is compatible with the factorization can be done in $𝓞(log |W|)$ time giving us a total of $𝓞(|W|log|W|)$ time.
+
+This is done by taking $B$ and $f_Θ(B)$ in two different factors and guessing the right pre/suffixes.
+
+**Case 2: |$D$| $≥$ |$W$|/6:**
+This case is exactly handled as the last one, and we therefore have the same complexity, $𝓞(|W|log|W|)$.
+
+**Case 3: |$A$| $≥$ |$W$|/6:**
+Here we take, as we have done for other facorisations, a set F of factors with a possible A as affix, then we try to guess $D$ and $f_Θ(D)$ and apply the tricks we used in Case 2 and do the same for $B$ and $f_Θ(B)$.
+
+The total time spend will thus be $𝓞(|W|log|W|)$.
 """
 
 # ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
@@ -2532,7 +2561,7 @@ version = "17.4.0+0"
 # ╟─83dcf30d-c01f-4dbb-9d42-1aa0ab517e5c
 # ╟─44c4f097-cc65-4a44-9a3c-f201545904a4
 # ╟─195c6eb6-2479-4e3a-9a3f-7533ead36eb4
-# ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
+# ╠═d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
 # ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
 # ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
 # ╟─a40114c7-9d06-4dfc-89c6-139955befb24
