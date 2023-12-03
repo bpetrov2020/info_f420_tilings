@@ -45,7 +45,7 @@ A _polyomino_ is a polygon formed of glued-together unit-length squares with no 
 
 # ╔═╡ 13b287d8-6340-4570-9f7c-ed9eab4bdd2c
 md"""
-Here’s an example showing two tesselations of the plane with polyominos. Both use only one shape, but only the second one is isohedral. In the first, only shapes of the same color may be mapped to one another.
+Here’s an example showing two tesselations of the plane with polyominoes. Both use only one shape, but only the second one is isohedral. In the first, only shapes of the same color may be mapped to one another.
 """
 
 # ╔═╡ 306500a9-e4de-4ae8-a05b-57e768202170
@@ -67,7 +67,7 @@ md"## Interactive showcase"
 md"""
 Before delving into the theoretical explanations of how we determine whether a polyomino can tile the plane, we propose first an interactive activity. The grid right below is a _polyomino builder_ and allows you to create your very own polyomino. You can click on the squares to add them to your polyomino and, once finished, hit the ‘Done’ button and see whether your polyomino can tile the plane!
 
-This can be thought as a game in which you must guess whether the polyomino can tile the plane, before verifying your intuition. Have fun and try to find the most esoteric polyominos tiling the plane!
+This can be thought as a game in which you must guess whether the polyomino can tile the plane, before verifying your intuition. Have fun and try to find the most esoteric polyominoes tiling the plane!
 
 > The notebook must be run in order to use the interactive elements.
 """
@@ -514,7 +514,7 @@ md"## Theoretical explanations"
 
 # ╔═╡ 27aa8b5d-bb9c-493f-b256-8503c8d4177d
 md"""
-The problem may seem daunting at first since the plane is infinite and there are possibly infinitely many ways to arrange an infinite set of polyominos, however, we shall note two things: first, we are only interested in whether there exists a tiling, and not in enumerating every tiling possible, and second since the tilings we study are isohedral, we may restrict ourselves to only the direct neighbourhood of one polyomino.
+The problem may seem daunting at first since the plane is infinite and there are possibly infinitely many ways to arrange an infinite set of polyominoes, however, we shall note two things: first, we are only interested in whether there exists a tiling, and not in enumerating every tiling possible, and second since the tilings we study are isohedral, we may restrict ourselves to only the direct neighbourhood of one polyomino.
 
 The last fact arises from the definition of isohedral, that is, in such a tiling we can map any polyomino of the plane to another by a set of transformations of the plane. For this to be possible, every polyomino must have the same neighbourhood as any other, otherwise the property would not hold. We can say that the plane must be locally congruent.
 
@@ -523,7 +523,7 @@ This is great news, we have reduced our problem of tiling the plane, to one of a
 
 # ╔═╡ 462623f2-1968-4fe5-89af-c9fbcdd5b49a
 md"""
-The following example shows a surrounding that leaves no gaps, yet doesn’t produce an isohedral tiling. We can convince ourselves by looking at the green and the red polyominos. The red one has its notch filled by the short tail of the polyomino, which is not the case for the green one. Therefore, we cannot map the red one to the green one, and this cannot produce an isohedral tiling.
+The following example shows a surrounding that leaves no gaps, yet doesn’t produce an isohedral tiling. We can convince ourselves by looking at the green and the red polyominoes. The red one has its notch filled by the short tail of the polyomino, which is not the case for the green one. Therefore, we cannot map the red one to the green one, and this cannot produce an isohedral tiling.
 """
 
 # ╔═╡ 81196bee-bee2-4788-bf5f-3f60f7e668df
@@ -536,7 +536,7 @@ Fortunately, a set of configurations that produce isohedral tilings were establi
 
 # ╔═╡ 3878e012-c80d-4b93-af22-901187b933d8
 md"""
-### Polyominos as words
+### Polyominoes as words
 """
 
 # ╔═╡ aefb27b5-4d65-436d-8f5b-093473e7e3fb
@@ -685,7 +685,7 @@ md"""
 md"""
 Similarly to other factorisations, the _gapped mirror_ comprised of $A$ and $\hat{A}$ as well as the palindromes are admissible. Two other results are useful for the algorithm. The first is that we can in $𝓞(n \log n)$ determine the palindromes starting and ending at each letter of the word. And the second one is that we can gather the admissible palindromes of $W$ in linear time.
 
-Considering these results, the algorithm will sort of consider all pairs of adjacent letters, and see whether an admissible palindrome starts at the second, and ends at the first. If that’s the case, we can be in either $BC$ or $DE$. We can then build up the admissible gapped mirror, and finally teste whether the remaining part of the word is the concatenation of two admissible palindromes, which can also verified efficiently. The total running time of the algorithm is in $𝓞(n \log^2 n)$.
+Considering these results, the algorithm will sort of consider all pairs of adjacent letters, and see whether an admissible palindrome starts at the second, and another one ends at the first. If that’s the case, we can be in either $BC$ or $DE$. We can then build up the admissible gapped mirror, and finally test whether the remaining part of the word is the concatenation of two admissible palindromes, which can also be verified efficiently. The total running time of the algorithm is in $𝓞(n \log^2 n)$.
 
 This running time makes this factorisation the bottleneck of the procedure. That means that if an improvement can be made to this type of factorisation, then the lower bound of determining whether a polyomino can tile the plane isohedrally can be lowered.
 """
@@ -702,30 +702,30 @@ The quarter-turn factorisation is defined as such:
 >A quarter-turn factorisation of a boundary word $W$ has the form:                            $W$ = $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes.
 
 The claim for this factorisation is:
->Let $P$ be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $B$($P$) has a quarter-turn factorisation.
+>Let $P$ be a polyomino with $|𝑩(P)| = n$. It can be decided in $𝓞(n)$ time if $B(P)$ has a quarter-turn factorisation.
 
 The approach of the algorithm is to find factorisations with long palindrome or 90-drome factors separately by guessing the 90-drome factors, given either a long 90-drome factor or the location of the first or last letter of a long palindrome factor.
 
-In this case, it was found that, by pigeonhole principle, a quarter-turn factorisation has at least one long factor of length at least |$W$|/3.
+In this case, it was found that, by pigeonhole principle, a quarter-turn factorisation has at least one long factor of length at least $|W|/3$.
 
 In order to achieve this in linear time we first need to do some preprocess of $W$.
 For each letter $i$ in the word $W$, we need to compute a lenght-sorted lists of all admissible:
 
-- 90-dromes that start at W[$i$]
-- 90-dromes that end at W[$i$]
-- Palindromes with center W[$i$] 
+- 90-dromes that start at $W[i]$
+- 90-dromes that end at $W[i]$
+- Palindromes with center $W[i]$
 
->Note:These lists can all be computed in $𝓞$(|$W$|) time and are structured such that the longest palindrome for each center can be found in $𝓞$(1) time. It is also proven that, there are $𝓞$(1) long 90-dromes, the long palidromes can be summerized by a $𝓞$(1)-sized set of letters and for any letter and that there are $𝓞$($log$|$W$|) 90-drome factors that start (or end) at the letter, and thus $𝓞$($log^2$ |$W$|) double 90-drome factors that start (or end) at the letter.
+>Note: These lists can all be computed in $𝓞(|W|)$ time and are structured such that the longest palindrome for each center can be found in $𝓞(1)$ time. It is also proven that, there are $𝓞(1)$ long 90-dromes, the long palidromes can be summerized by a $𝓞(1)$-sized set of letters and for any letter and that there are $𝓞(\log|W|)$ 90-drome factors that start (or end) at the letter, and thus $𝓞(\log^2 |W|)$ double 90-drome factors that start (or end) at the letter.
 
-To find the factorisations starting from a long 90-drome, we scan through the lists we computed before and extract the $𝓞$(1) long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
-We then have an induced factorisation $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorisations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $𝓞$($log^2(W)$) time.
+To find the factorisations starting from a long 90-drome, we scan through the lists we computed before and extract the $𝓞(1)$ long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
+We then have an induced factorisation $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorisations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $𝓞(log^2(W))$ time.
 
-To find the factorisations startinng from a long palindrome, we first build, similarily to the first search, the double admissible 90-dromes $D_1D_2$ starting at $W$[$i$ + 1] with i either the fisrst or last letter of a long palindrome.
-This again induces a factorisation $W$ = $AD_1D_2$ (including |$D_2$| = 0) and we can check if $A$ is a long palindrome.
-Then we repeat the process for $D_1D_2$ ending at $W$[$i$ - 1].
+To find the factorisations starting from a long palindrome, we first build, similarily to the first search, the double admissible 90-dromes $D_1D_2$ starting at $W[i + 1]$ with $i$ either the fisrst or last letter of a long palindrome.
+This again induces a factorisation $W = AD_1D_2$ (including $|D_2| = 0$) and we can check if $A$ is a long palindrome.
+Then we repeat the process for $D_1D_2$ ending at $W[i - 1]$.
 
-All these operations take a maximum of $𝓞$($log^3(W)$) time.
-The total time complexity is thus well $𝓞$(n).
+All these operations take a maximum of $𝓞(log^3(W))$ time.
+The total time complexity is thus well $𝓞(n)$.
 """
 
 
@@ -742,7 +742,7 @@ md"""
 
 # ╔═╡ 0c781874-bfc8-43a2-99b4-61fe857245b6
 md"""
-For this one, there are two important structural results to consider. First, all pairs of the form $Af_Θ(A)$, called _reflect squares_, can be enumerated in $𝓞(n \log n)$. And second, all factors in a factorisation of this kind are _admissible_, that is we cannot make them bigger and still keep their properties.
+For this one, there are two important structural results to consider. First, all pairs of the form $Af_Θ(A)$, called _reflect squares_, can be enumerated in $𝓞(n \log n)$. And second, all factors in a factorisation of this kind are _admissible_, that is, we cannot make them bigger and still keep their properties.
 
 With these two results, the algorithm consists of first collecting all reflect squares, and then for each of them, find the admissible adjacent pair, $A$ and $\hat{A}$, and test whether the remaining part of the word is also a reflect square. If it is the case, we have found a type-1 reflection factorisation.
 """
@@ -756,22 +756,22 @@ md"""
 md"""
 The type-2 Reflection factorisation is defined as such:
 
-> A type-2 reflection factorisation of a boundary word $W$ has the form:  $W$=$ABCCÂf_Θ(C)f_Θ(B)$ for some $Θ$.
+> A type-2 reflection factorisation of a boundary word $W$ has the form:  $W=ABCCÂf_Θ(C)f_Θ(B)$ for some $Θ$.
 
 The claim for this factorisation is:
->Let P be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $𝑩(P)$ has a type-2 reflection factorisation.
+>Let $P$ be a polyomino with $|𝑩(P)| = n$. It can be decided in $𝓞(n)$ time if $𝑩(P)$ has a type-2 reflection factorisation.
 
-The algorithm is divided in two cases, this is because we can say that, for a type-2 reflection factorisation, without loss of generality, either |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6. Thus, we have 1 case for each |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6.
+The algorithm is divided into two cases, this is because we can say that, for a type-2 reflection factorisation, without loss of generality, either $|A| ≥ |W|/6$ or $|B| ≥ |W|/6$. Thus, we have 1 case for each $|A| ≥ |W|/6$ or $|B| ≥ |W|/6$.
 
-**Case 1: |$A$| $≥$ |$W$|/6:**
-In that case $A$ and $Â$ are admissible, the fisrt step consist in computing all admissible factor A, the we compute the set $F$ of all factors for wich every $A$ with |$A$| ≥ |W |/6 is an affix factor of element of $F$ ($𝓞(|W|)$ time).
+**Case 1: $|A| ≥ |W|/6$:**
+In that case $A$ and $Â$ are admissible, the first step consists in computing all admissible factors $A$, then we compute the set $F$ of all factors for wich every $A$ with $|A| ≥ |W |/6$ is an affix factor of element of $F$ ($𝓞(|W|)$ time).
 
-We then take the Factors in $F$ and try to Guess $B$ and $f_Θ(B)$, the candidates are the longest common suffixes of $X$ and $Y$ with $F=XY$ and |$Y$| = $±|X|$, Then we compare the prefixes from $X$ and $Y$, it should be $A$ and $Â$ the remainig words before and after $Â$ should be $C$ and $f_Θ(C)$
+We then take the factors in $F$ and try to guess $B$ and $f_Θ(B)$, the candidates are the longest common suffixes of $X$ and $Y$ with $F=XY$ and $|Y| = ±|X|$, Then we compare the prefixes from $X$ and $Y$, it should be $A$ and $Â$ the remainig words before and after $Â$ should be $C$ and $f_Θ(C)$
 
-**Case 2: |$B$| $≥$ |$W$|/6:**
+**Case 2: $|B| ≥ |W|/6$:**
 Here the trick is to guess pairs of $B$ and $f_Θ(B)$ and then apply the same reasonning as the first case.
 
-Each case can be done in $𝓞(|W|)$, thus linear, time.
+Each case can be done in $𝓞(|W|)$, thus linear time.
 
 """
 
@@ -809,20 +809,20 @@ The type-2 Reflection factorisation is defined as such:
 > A type-2 half-turn-reflection factorisation of a boundary word $W$ has the form: $W = ABCDfΘ(B)fΦ(D)$ with $A$, $C$ palindromes and $Θ◦ −Φ◦ = ±90◦$.
 
 The claim for this factorisation is:
->Let P be a polyomino with |B(P )| = n. It can be decided in $𝓞(n log n)$ time if $B(P)$ has a type-2 half-turn-reflection factorisation.
+> Let $P$ be a polyomino with $|B(P)| = n$. It can be decided in $𝓞(n \log n)$ time if $B(P)$ has a type-2 half-turn-reflection factorisation.
 
-Knowing that, without loss of generality, an element from {$A, B, C, D$} has length at least |$W$|/6. And the cases of $A$ and $C$ are symmetric there are 3 cases to be handled by the algorithm.
+Knowing that, without loss of generality, an element from ${A, B, C, D}$ has length at least $|W|/6$. And the cases of $A$ and $C$ are symmetric there are 3 cases to be handled by the algorithm.
 
-**Case 1: |$B$| $≥$ |$W$|/6:**
-Here we first comupte a set of all pairs of $B$ and $f_Θ(B)$ ($𝓞(|W|)$ size), then determinig if each pair is compatible with the factorisation can be done in $𝓞(log |W|)$ time giving us a total of $𝓞(|W|log|W|)$ time.
+**Case 1: $|B| ≥ |W|/6$:**
+Here we first compute a set of all pairs of $B$ and $f_Θ(B)$ ($𝓞(|W|)$ size), then determining if each pair is compatible with the factorisation can be done in $𝓞(log |W|)$ time giving us a total of $𝓞(|W|\log|W|)$ time.
 
 This is done by taking $B$ and $f_Θ(B)$ in two different factors and guessing the right pre/suffixes.
 
-**Case 2: |$D$| $≥$ |$W$|/6:**
-This case is exactly handled as the last one, and we therefore have the same complexity, $𝓞(|W|log|W|)$.
+**Case 2: $|D| ≥ |W|/6$:**
+This case is exactly handled as the last one, and we therefore have the same complexity, $𝓞(|W|\log|W|)$.
 
-**Case 3: |$A$| $≥$ |$W$|/6:**
-Here we take, as we have done for other facorisations, a set F of factors with a possible A as affix, then we try to guess $D$ and $f_Θ(D)$ and apply the tricks we used in Case 2 and do the same for $B$ and $f_Θ(B)$.
+**Case 3: $|A| ≥ |W|/6$:**
+Here we take, as we have done for other factorisations, a set $F$ of factors with a possible $A$ as affix, then we try to guess $D$ and $f_Θ(D)$ and apply the tricks we used in Case 2 and do the same for $B$ and $f_Θ(B)$.
 
 The total time spend will thus be $𝓞(|W|log|W|)$.
 """
