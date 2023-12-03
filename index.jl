@@ -241,6 +241,7 @@ md"""
 	const editBtn = document.getElementById('edit-btn');
 	const resetBtn = document.getElementById('reset-btn');
 	var btns = document.querySelectorAll('.button');
+	var sizeOfBoundary = -1;
 
 	editBtn.disabled = true;
 
@@ -289,7 +290,7 @@ md"""
 		return [startBtnIdx, rotate];
 	}
 
-	function generateBoundaryWord(sizeOfBoundary) {
+	function generateBoundaryWord() {
 		let border = ['left', 'top', 'right', 'bottom'];
 		let letters = ['u', 'r', 'd', 'l'];
 		let shifts = [-1, -10, 1, 10];
@@ -461,11 +462,12 @@ md"""
 			span.dispatchEvent(new CustomEvent("input"));
 			return;
 		}
-		let sizeOfBoundary = getSizeOfBoundary();
-		let bw = generateBoundaryWord(sizeOfBoundary);
+		sizeOfBoundary = getSizeOfBoundary();
+		let bw = generateBoundaryWord();
 		if ( bw !== null) {
 			// Sending the BoundaryWord back to pluto
 			span.value = bw;
+			console.log(span.value);
 			span.dispatchEvent(new CustomEvent("input"));
 			fillPolyomino(true);
 			disableGrid(true);
@@ -605,7 +607,7 @@ md"""
 
 # ╔═╡ b9e76e3f-9831-4b04-8870-29605561d189
 md"""
-A simple and straightforward algorithm to find a suitable factorization would be a brute force algorithm trying all possible factorisations and checking whether they satisfy the constraints. We could improve the algorithm by introducing pruning and not going down a path if the first constraints are not satisfied. For example, for the _Quarter Turn_, when trying a specific $A$, we would not continue if it is not a palindrome. However, this doesn’t reduce the worst case complexity that is still $𝓞(n^6)$, as it is usually the case with such kinds of algorithms. 
+A simple and straightforward algorithm to find a suitable factorisation would be a brute force algorithm trying all possible factorisations and checking whether they satisfy the constraints. We could improve the algorithm by introducing pruning and not going down a path if the first constraints are not satisfied. For example, for the _Quarter Turn_, when trying a specific $A$, we would not continue if it is not a palindrome. However, this doesn’t reduce the worst case complexity that is still $𝓞(n^6)$, as it is usually the case with such kinds of algorithms. 
 """
 
 # ╔═╡ 6e95928e-b683-45e6-a4cc-9046420a6166
@@ -643,9 +645,8 @@ md"""
 
 # ╔═╡ edfcac8e-31bf-427b-92bf-f905750d9952
 md"""
-Factorisations of the form $W = ABC\hat{A}\hat{B}\hat{C}$
+> Factorisations of the form $W = ABC\hat{A}\hat{B}\hat{C}$
 
----
 """
 
 # ╔═╡ 72a8fbe2-7688-42ea-85fb-2c14fd3cec89
@@ -676,9 +677,8 @@ md"""
 
 # ╔═╡ 704ea723-b649-46c9-9d61-1a6e2eb98e94
 md"""
-Factorisations of the form $W = ABC\hat{A}DE$ with $B$, $C$, $D$, $E$ palindromes
+> Factorisations of the form $W = ABC\hat{A}DE$ with $B$, $C$, $D$, $E$ palindromes
 
----
 """
 
 # ╔═╡ 16cb1a77-d27f-4f31-93ff-93747be1a286
@@ -690,6 +690,45 @@ Considering these results, the algorithm will sort of consider all pairs of adja
 This running time makes this factorisation the bottleneck of the procedure. That means that if an improvement can be made to this type of factorisation, then the lower bound of determining whether a polyomino can tile the plane isohedrally can be lowered.
 """
 
+# ╔═╡ 06bdb6ac-20ca-4b8c-881c-29ce38176f47
+md"""
+#### Quarter-Turn
+"""
+
+# ╔═╡ a0bb1aa7-ae77-4964-94dd-109ba4134824
+md"""
+The quarter-turn factorisation is defined as such:
+
+>A quarter-turn factorisation of a boundary word $W$ has the form:                            $W$ = $ABC$ with $A$ a palindrome and $B$, $C$ 90-dromes.
+
+The claim for this factorisation is:
+>Let $P$ be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $B$($P$) has a quarter-turn factorisation.
+
+The approach of the algorithm is to find factorisations with long palindrome or 90-drome factors separately by guessing the 90-drome factors, given either a long 90-drome factor or the location of the first or last letter of a long palindrome factor.
+
+In this case, it was found that, by pigeonhole principle, a quarter-turn factorisation has at least one long factor of length at least |$W$|/3.
+
+In order to achieve this in linear time we first need to do some preprocess of $W$.
+For each letter $i$ in the word $W$, we need to compute a lenght-sorted lists of all admissible:
+
+- 90-dromes that start at W[$i$]
+- 90-dromes that end at W[$i$]
+- Palindromes with center W[$i$] 
+
+>Note:These lists can all be computed in $𝓞$(|$W$|) time and are structured such that the longest palindrome for each center can be found in $𝓞$(1) time. It is also proven that, there are $𝓞$(1) long 90-dromes, the long palidromes can be summerized by a $𝓞$(1)-sized set of letters and for any letter and that there are $𝓞$($log$|$W$|) 90-drome factors that start (or end) at the letter, and thus $𝓞$($log^2$ |$W$|) double 90-drome factors that start (or end) at the letter.
+
+To find the factorisations starting from a long 90-drome, we scan through the lists we computed before and extract the $𝓞$(1) long 90-dromes, then we rescan the list to find and combine the long 90-drome with another one that eiter ends just before or start right after him.
+We then have an induced factorisation $W$ = $AD_1D_2$ with $D_1$ and $D_2$ admissible 90-dromes, we then just need to check for all factorisations that contain $D_1$ and $D_2$ wheter $A$ is a palindrome or not. All these operations take a maximum of $𝓞$($log^2(W)$) time.
+
+To find the factorisations startinng from a long palindrome, we first build, similarily to the first search, the double admissible 90-dromes $D_1D_2$ starting at $W$[$i$ + 1] with i either the fisrst or last letter of a long palindrome.
+This again induces a factorisation $W$ = $AD_1D_2$ (including |$D_2$| = 0) and we can check if $A$ is a long palindrome.
+Then we repeat the process for $D_1D_2$ ending at $W$[$i$ - 1].
+
+All these operations take a maximum of $𝓞$($log^3(W)$) time.
+The total time complexity is thus well $𝓞$(n).
+"""
+
+
 # ╔═╡ 0bc986f7-791a-43a4-aeaa-962942d5a424
 md"""
 #### Type-1 Reflection
@@ -697,9 +736,8 @@ md"""
 
 # ╔═╡ 24b50179-70be-409e-8e05-98e262a4b59b
 md"""
-Factorisations of the form $W = ABf_Θ(B)\hat{A}Cf_Φ(C)$ for some $Θ$, $Φ$
+> Factorisations of the form $W = ABf_Θ(B)\hat{A}Cf_Φ(C)$ for some $Θ$, $Φ$
 
----
 """
 
 # ╔═╡ 0c781874-bfc8-43a2-99b4-61fe857245b6
@@ -709,6 +747,34 @@ For this one, there are two important structural results to consider. First, all
 With these two results, the algorithm consists of first collecting all reflect squares, and then for each of them, find the admissible adjacent pair, $A$ and $\hat{A}$, and test whether the remaining part of the word is also a reflect square. If it is the case, we have found a type-1 reflection factorisation.
 """
 
+# ╔═╡ aa7b9d69-16a0-4e05-96ff-b9ae75d27af7
+md"""
+#### Type-2 Reflection
+"""
+
+# ╔═╡ e99222de-2cde-4b7d-8b7f-5a23c95ca611
+md"""
+The type-2 Reflection factorisation is defined as such:
+
+> A type-2 reflection factorisation of a boundary word $W$ has the form:  $W$=$ABCCÂf_Θ(C)f_Θ(B)$ for some $Θ$.
+
+The claim for this factorisation is:
+>Let P be a polyomino with |$𝑩$($P$)| = n. It can be decided in $𝓞$(n) time if $𝑩(P)$ has a type-2 reflection factorisation.
+
+The algorithm is divided in two cases, this is because we can say that, for a type-2 reflection factorisation, without loss of generality, either |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6. Thus, we have 1 case for each |$A$| ≥ |$W$|/6 or |$B$| ≥ |$W$|/6.
+
+**Case 1: |$A$| $≥$ |$W$|/6:**
+In that case $A$ and $Â$ are admissible, the fisrt step consist in computing all admissible factor A, the we compute the set $F$ of all factors for wich every $A$ with |$A$| ≥ |W |/6 is an affix factor of element of $F$ ($𝓞(|W|)$ time).
+
+We then take the Factors in $F$ and try to Guess $B$ and $f_Θ(B)$, the candidates are the longest common suffixes of $X$ and $Y$ with $F=XY$ and |$Y$| = $±|X|$, Then we compare the prefixes from $X$ and $Y$, it should be $A$ and $Â$ the remainig words before and after $Â$ should be $C$ and $f_Θ(C)$
+
+**Case 2: |$B$| $≥$ |$W$|/6:**
+Here the trick is to guess pairs of $B$ and $f_Θ(B)$ and then apply the same reasonning as the first case.
+
+Each case can be done in $𝓞(|W|)$, thus linear, time.
+
+"""
+
 # ╔═╡ b56d0a2c-abb1-41b3-ac90-a00841e3c931
 md"""
 #### Type-1 Half-Turn Reflection
@@ -716,9 +782,8 @@ md"""
 
 # ╔═╡ 710df413-cdd8-4f37-b474-8f9b8c8ab043
 md"""
-Factorisation of the form $W = ABC\hat{A}Df_Θ(D)$
+> Factorisation of the form $W = ABC\hat{A}Df_Θ(D)$
 
----
 """
 
 # ╔═╡ 9bc7265a-3c58-4aae-a5f7-a4974ebcd372
@@ -732,13 +797,47 @@ The first step starts by finding the linearly sized set of reflect squares $Df_�
 The second step collects all admissible palindromes in linear time, and then tries to match each completion factor from the first phase with two palindromes from here. If a match is found, then one of the completion factors can be split into two admissible palindromes, and we have a factorisation.
 """
 
-# ╔═╡ d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
+# ╔═╡ 44c4f097-cc65-4a44-9a3c-f201545904a4
 md"""
-## Advanced Interactive Showcase
+#### Type-2 Half-Turn-Reflection
 """
 
-# ╔═╡ 551b3fdd-cc9f-47c2-ab76-f523ecb4db08
-@bind ad_boundaryword TextField(60;default="rdrdrdllddrurddddlllddldluurulluulluurdruurdruulurru")
+# ╔═╡ 195c6eb6-2479-4e3a-9a3f-7533ead36eb4
+md"""
+The type-2 Reflection factorisation is defined as such:
+
+> A type-2 half-turn-reflection factorisation of a boundary word $W$ has the form: $W = ABCDfΘ(B)fΦ(D)$ with $A$, $C$ palindromes and $Θ◦ −Φ◦ = ±90◦$.
+
+The claim for this factorisation is:
+>Let P be a polyomino with |B(P )| = n. It can be decided in $𝓞(n log n)$ time if $B(P)$ has a type-2 half-turn-reflection factorisation.
+
+Knowing that, without loss of generality, an element from {$A, B, C, D$} has length at least |$W$|/6. And the cases of $A$ and $C$ are symmetric there are 3 cases to be handled by the algorithm.
+
+**Case 1: |$B$| $≥$ |$W$|/6:**
+Here we first comupte a set of all pairs of $B$ and $f_Θ(B)$ ($𝓞(|W|)$ size), then determinig if each pair is compatible with the factorisation can be done in $𝓞(log |W|)$ time giving us a total of $𝓞(|W|log|W|)$ time.
+
+This is done by taking $B$ and $f_Θ(B)$ in two different factors and guessing the right pre/suffixes.
+
+**Case 2: |$D$| $≥$ |$W$|/6:**
+This case is exactly handled as the last one, and we therefore have the same complexity, $𝓞(|W|log|W|)$.
+
+**Case 3: |$A$| $≥$ |$W$|/6:**
+Here we take, as we have done for other facorisations, a set F of factors with a possible A as affix, then we try to guess $D$ and $f_Θ(D)$ and apply the tricks we used in Case 2 and do the same for $B$ and $f_Θ(B)$.
+
+The total time spend will thus be $𝓞(|W|log|W|)$.
+"""
+
+# ╔═╡ 2ee6cfb8-75be-4c8f-8ae3-313ee97902fd
+md"""
+## Conclusion
+"""
+
+# ╔═╡ c36faf5b-beed-4066-abec-2594794e039f
+md"""
+As we’ve seen, we can study tilings of polyominoes by introducing the notion of boundary word, which is a sort of path that encloses them. These boundary words can then be factorised into a sequence of subwords, called factorisation, and if some properties are satisfied by these factors, then an isohedral tiling exists. There exists 7 such configurations and the problem of determining whether a word can be factorised in one of them is decidable.
+
+A immediate brute force algorithm in $𝓞(n^6)$ can be used, but we’ve shown that we a much better one exists in $𝓞(n \log^2 n)$ by using strong structural results on the words.
+"""
 
 # ╔═╡ 9f2236ba-0e22-4425-a951-6cc6ceed7520
 md"# Appendix A: code"
@@ -747,17 +846,6 @@ md"# Appendix A: code"
 md"""
 ## Current factorisation state
 """
-
-# ╔═╡ f7905493-c171-43a7-bcc4-dd269a778e9a
-begin
-	local bw = Markdown.parse("\$𝐁(P) = $boundaryWord\$")
-	
-	md"""
-	The boundary of the polyomino $P$ is:
-	
-	$(bw)
-	"""
-end
 
 # ╔═╡ 2f74f271-3f59-4edc-bc7a-0a950cb24bd7
 PLANE_WIN_X = 700
@@ -778,13 +866,8 @@ md"""
 **Zoom** $(@bind ex_UNIT Slider(MIN_SQ_UNIT:30))
 """
 
-# ╔═╡ c32cff12-157e-42d7-a827-9a5760d44d8c
-md"""
-**Zoom** $(@bind ad_UNIT Slider(MIN_SQ_UNIT:30))
-"""
-
 # ╔═╡ 77a355a2-7591-4d18-955b-bbf6c7e19dda
-# No pretty, but otherwise the export is kinda fucked up
+# No pretty, but otherwise the export is kinda messed up
 boundary_word = try
 	if isnothing(boundaryWord) || boundaryWord == "Illegal polyomino"
 		""
@@ -1058,17 +1141,6 @@ end
 	TypeOneHalfTurnReflection
 	TypeTwoHalfTurnReflection
 ]; default=Translation)
-
-# ╔═╡ 178e06b5-3e14-4ffa-9c99-369cf322f53d
-@bind factorize_method Select([
-	Translation
-	HalfTurn
-	QuarterTurn
-	TypeOneReflection
-	TypeTwoReflection
-	TypeOneHalfTurnReflection
-	TypeTwoHalfTurnReflection
-]; default=TypeTwoHalfTurnReflection)
 
 # ╔═╡ cc23edf7-3ac3-4dad-84b2-40186375c428
 function example_word(method)
@@ -1365,7 +1437,7 @@ admissible_factors("rrddrurddrdllldldluullurrruluu")
 
 # ╔═╡ 830056cc-efb4-4305-9a69-4f19138eb6db
 """
-Expand half BN factorizations to full ones.
+Expand half BN factorisations to full ones.
 """
 function expand(factors::Vector{Factor}, word_length::Integer)::Vector{Factor}
 	half_length = word_length ÷ 2
@@ -1447,7 +1519,7 @@ end
 """
 	translation_vectors(word::String, fact::Factorization)::Vector{Vec2D}
 
-Given a word and its BN factorization, give the vectors to the adjacent tiles in a tiling.
+Given a word and its BN factorisation, give the vectors to the adjacent tiles in a tiling.
 """
 function translation_vectors(word::String, fact::Factorization)::Vector{Vec2D}
 	hf = length(fact) ÷ 2
@@ -1467,7 +1539,7 @@ end
 """
 	bn_transformations(word::String, fact::Factorization)
 
-Get translation vectors for a BN factorization as transformations. Useful for `generate_tiling`.
+Get translation vectors for a BN factorisation as transformations. Useful for `generate_tiling`.
 """
 function bn_transformations(word::String, fact::Factorization)
 	vecs = translation_vectors(word, fact)
@@ -1592,7 +1664,7 @@ end
 
 # ╔═╡ 8c141949-4bf2-45ed-bf65-c033a3039e2b
 md"""
-### Quarter-Turn Factorization
+### Quarter-Turn factorisation
 """
 
 # ╔═╡ aec03332-7823-4a88-aa1c-5d8ef8ce69da
@@ -2077,9 +2149,6 @@ function factorize(word::String, method::FactorizationKind)
 	end
 end
 
-# ╔═╡ 62e08347-baa0-44d4-8b06-84463813e498
-ad_factorization = factorize(ad_boundaryword, factorize_method)
-
 # ╔═╡ 7ff92923-ff57-4411-8301-40cf013dbaa1
 function anyfactorization(w::String)
 	[
@@ -2190,57 +2259,6 @@ function transformations(bw::String, fact::BWFactorization)
 		type_two_half_turn_reflection_transformations(bw, fact.fact)
 	end
 end
-
-# ╔═╡ f1d74824-2a73-45fb-a4dd-681e4e5991ac
-ad_transforms = transformations(ad_boundaryword, ad_factorization)
-
-# ╔═╡ 762d2fc3-7c40-4505-8f87-4a0688d6e206
-ad_tilepolygons = generate_tiling(
-	ad_boundaryword,
-	(PLANE_WIN_X ÷ MIN_SQ_UNIT, PLANE_WIN_Y ÷ MIN_SQ_UNIT),
-	ad_transforms
-)
-
-# ╔═╡ 174a803d-782c-472d-96b9-86715dc0ff76
-ad_tiling = (ad_tilepolygons
-	.|> (p -> scale(p, ad_UNIT))
-	.|> (p -> translate(p, (PLANE_WIN_X ÷ 2, PLANE_WIN_Y ÷ 2))))
-
-# ╔═╡ a40114c7-9d06-4dfc-89c6-139955befb24
-@htl("""
-	<script src="https://cdn.jsdelivr.net/npm/d3@6.2.0/dist/d3.min.js"></script>
-	
-	<script id="drawing">
-	
-	
-	// const svg = this == null ? DOM.svg(600,300) : this
-	// const s = this == null ? d3.select(svg) : this.s
-	
-	const svg = DOM.svg("100%", 300)
-	const s = d3.select(svg)
-	
-	s.append("rect")
-	    .attr("width", "100%")
-	    .attr("height", "100%")
-	    .attr("fill", "white");
-	
-	const line = d3.line()
-	let data = $ad_tiling
-	
-	data.forEach((polygon) => {
-		s.append("path")
-			.attr("d", line(polygon))
-			.attr("stroke", "black")
-			.attr("fill", "white")
-	})
-	
-	const output = svg
-	output.s = s
-	return output
-	
-	</script>
-	
-	""")
 
 # ╔═╡ 3c17a506-20c2-44dc-a786-399554523483
 transforms = transformations(boundary_word, factorization)
@@ -2362,7 +2380,7 @@ ex_tiling = (ex_tilepolygons
 		s.append("circle")
 			.attr("cx", point[0])
 			.attr("cy", point[1])
-			.attr("r", $ad_UNIT/4)
+			.attr("r", $ex_UNIT/4)
 	})
 	
 	const output = svg
@@ -2739,25 +2757,23 @@ version = "17.4.0+0"
 # ╟─cbc82b85-e756-4955-bc46-2cff64c1a845
 # ╟─704ea723-b649-46c9-9d61-1a6e2eb98e94
 # ╟─16cb1a77-d27f-4f31-93ff-93747be1a286
+# ╟─06bdb6ac-20ca-4b8c-881c-29ce38176f47
+# ╟─a0bb1aa7-ae77-4964-94dd-109ba4134824
 # ╟─0bc986f7-791a-43a4-aeaa-962942d5a424
 # ╟─24b50179-70be-409e-8e05-98e262a4b59b
 # ╟─0c781874-bfc8-43a2-99b4-61fe857245b6
+# ╟─aa7b9d69-16a0-4e05-96ff-b9ae75d27af7
+# ╟─e99222de-2cde-4b7d-8b7f-5a23c95ca611
 # ╟─b56d0a2c-abb1-41b3-ac90-a00841e3c931
 # ╟─710df413-cdd8-4f37-b474-8f9b8c8ab043
 # ╟─9bc7265a-3c58-4aae-a5f7-a4974ebcd372
-# ╟─d08c58c6-2e4a-4cc7-bdc6-c5ef4194a270
-# ╟─178e06b5-3e14-4ffa-9c99-369cf322f53d
-# ╟─551b3fdd-cc9f-47c2-ab76-f523ecb4db08
-# ╟─a40114c7-9d06-4dfc-89c6-139955befb24
-# ╟─c32cff12-157e-42d7-a827-9a5760d44d8c
-# ╟─62e08347-baa0-44d4-8b06-84463813e498
-# ╟─f1d74824-2a73-45fb-a4dd-681e4e5991ac
-# ╟─762d2fc3-7c40-4505-8f87-4a0688d6e206
-# ╟─174a803d-782c-472d-96b9-86715dc0ff76
+# ╟─44c4f097-cc65-4a44-9a3c-f201545904a4
+# ╟─195c6eb6-2479-4e3a-9a3f-7533ead36eb4
+# ╟─2ee6cfb8-75be-4c8f-8ae3-313ee97902fd
+# ╟─c36faf5b-beed-4066-abec-2594794e039f
 # ╟─9f2236ba-0e22-4425-a951-6cc6ceed7520
 # ╠═86325fcc-348c-4108-bf77-3555a6fc243c
 # ╟─58bdacbe-0bd7-4e9b-8a39-c2c5c89f2f42
-# ╟─f7905493-c171-43a7-bcc4-dd269a778e9a
 # ╟─2f74f271-3f59-4edc-bc7a-0a950cb24bd7
 # ╟─2e92baef-efe4-4355-93a8-1c3797e17ece
 # ╟─c699b23f-2341-4a07-9d72-ff85585110f4
